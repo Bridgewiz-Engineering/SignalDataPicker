@@ -6,6 +6,7 @@ using Microsoft.Win32;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -85,9 +86,9 @@ namespace SignalDataPicker
                         {
                             TimeStamp = lineArray[0],
                             Index = Convert.ToInt32(lineArray[1]),
-                            X = Convert.ToDouble(lineArray[2]),
-                            Y = Convert.ToDouble(lineArray[3]),
-                            Z = Convert.ToDouble(lineArray[4])
+                            X = Convert.ToDouble(lineArray[2], CultureInfo.InvariantCulture),
+                            Y = Convert.ToDouble(lineArray[3], CultureInfo.InvariantCulture),
+                            Z = Convert.ToDouble(lineArray[4], CultureInfo.InvariantCulture)
                         });
                     }
                 }
@@ -130,7 +131,7 @@ namespace SignalDataPicker
             if (sfd.ShowDialog() == true)
             {
                 targetFileName = sfd.FileName;
-                var filteredRecords = Records.GetRange(startIndex - 1, endIndex); // it gets startIndex, count so we do not subtract 1 from endIndex
+                var filteredRecords = Records.GetRange(startIndex - 1, endIndex - startIndex);
                 switch (cmbDirection.SelectedIndex)
                 {
                     case -1:
