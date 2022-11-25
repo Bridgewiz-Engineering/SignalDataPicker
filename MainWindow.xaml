@@ -4,6 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         xmlns:local="clr-namespace:SignalDataPicker"
         mc:Ignorable="d"
         Title="Sinyal Veri Ayıklama" Height="768" Width="1024">
@@ -13,6 +14,7 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -22,25 +24,29 @@
         </Grid.ColumnDefinitions>
         
         <TextBlock Grid.Row="0" Grid.Column="0" Margin="4" Text="Dosya:" VerticalAlignment="Center" />
-        <TextBox Grid.Row="0" Grid.Column="1" Margin="4" Name="txtFileName" />
-        <ComboBox Grid.Row="0" Grid.Column="2" Margin="4" SelectionChanged="ComboBox_SelectionChanged" >
+        <TextBox Grid.Row="0" Grid.Column="1" Margin="4" Name="txtFileName" IsReadOnly="True" />
+        <ComboBox Grid.Row="0" Grid.Column="2" Margin="4" >
             <ComboBoxItem Name="BridgewizSensors" Content="Bridgewiz Ivme Olcer" IsSelected="True" />
         </ComboBox>
         <Button Grid.Row="0" Grid.Column="3" Margin="4" Name="btnSelectFile" Content="..." Click="btnSelectFile_Click" />
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="Yön:" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection">
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection" SelectionChanged="cmbDirection_SelectionChanged">
             <ComboBoxItem Name="X" Content="X" />
             <ComboBoxItem Name="Y" Content="Y" />
             <ComboBoxItem Name="Z" Content="Z" />
         </ComboBox>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="0" Name="txtStartIndex" />
+        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="0" Name="txtStartIndex" Minimum="1" />
 
-        <Button Grid.Row="2" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Grid.RowSpan="2" Margin="4" />
-
+        <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" SelectedIndex="0">
+            <ComboBoxItem Name="seismoSignal" Content="SeismoSignal" />
+        </ComboBox>
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="0" Name="txtEndIndex" />
+        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="0" Name="txtEndIndex" Minimum="1" />
+        <Button Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Click="Button_Click" />
+
+        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" Name="lvcChart" ZoomMode="X" />
     </Grid>
 </mah:MetroWindow>
