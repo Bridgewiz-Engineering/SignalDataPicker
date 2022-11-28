@@ -138,17 +138,17 @@ namespace SignalDataPicker
                     default:
                     case 0:
                         {
-                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.X.ToString()));
+                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.X.ToString(CultureInfo.InvariantCulture)));
                             break;
                         }
                     case 1:
                         {
-                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.Y.ToString()));
+                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.Y.ToString(CultureInfo.InvariantCulture)));
                             break;
                         }
                     case 2:
                         {
-                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.Z.ToString()));
+                            File.WriteAllLines(targetFileName, filteredRecords.ConvertAll(q => q.Z.ToString(CultureInfo.InvariantCulture)));
                             break;
                         }
 
