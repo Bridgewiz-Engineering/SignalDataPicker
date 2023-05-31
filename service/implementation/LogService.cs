@@ -9,12 +9,15 @@ namespace SignalDataPicker.service.implementation
         public void LogError(string message)
         {
             semaphoreSlim.Wait();
+            if (!Directory.Exists("logs"))
+                Directory.CreateDirectory("logs");
+
             File.AppendAllText(LOG_FILE_NAME, $"{DateTime.Now} - [ERROR] - {message}{Environment.NewLine}");
             semaphoreSlim.Release();
         }
 
         #region Fields
-        private const string LOG_FILE_NAME = "log.txt";
+        private const string LOG_FILE_NAME = "logs/log.txt";
         private static readonly SemaphoreSlim semaphoreSlim = new(1, 1);
         #endregion
     }

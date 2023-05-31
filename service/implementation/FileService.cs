@@ -1,10 +1,11 @@
 ﻿using Microsoft.Win32;
 using SignalDataPicker.model;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Linq;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SignalDataPicker.service.implementation
 {
@@ -14,6 +15,40 @@ namespace SignalDataPicker.service.implementation
         {
             m_LogService = logService;
         }
+
+        public async Task<bool> SaveFile(FileData fileData, OutputType outputType, DataAxis dataAxis, int startIndex, int endIndex)
+        {
+            var success = false;
+            if (fileData.FilteredData.Count == 0) return success;
+
+            var currentFolder = Path.GetDirectoryName(fileData.FileName);
+            var currentFileName = Path.GetFileNameWithoutExtension(fileData.FileName);
+            var targetFileName = $"{currentFileName}_{dataAxis}_{startIndex}_{endIndex}.csv";
+
+            SaveFileDialog sfd = new()
+            {
+                AddExtension = true,
+                Filter = "CSV|*.csv",
+                InitialDirectory = currentFolder,
+                FileName = targetFileName,
+                OverwritePrompt = true,
+                Title = "Kaydet",
+            };
+            if (sfd.ShowDialog() == true)
+            {
+                targetFileName = sfd.FileName;
+                switch (outputType)
+                {
+                    case OutputType.SeismoSignal:
+                        success = await SaveSeismoSignalData(targetFileName, fileData.FilteredData);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return success;
+        }
+
         async public Task<FileData?> LoadFile(FileType fileType)
         {
             FileData? fileData = null;
@@ -36,18 +71,18 @@ namespace SignalDataPicker.service.implementation
                     fileData = new FileData
                     {
                         FileName = fileName,
-                        Data = data ?? new List<Record>()
+                        AllData = data ?? new List<Record>()
                     };
                 }
                 catch (Exception ex)
                 {
-                    m_LogService.LogError(ex.Message);
+                    m_LogService.LogError($"Error opening file {fileName}: {ex.Message}");
                 }
             }
             return fileData;
         }
         #region Private Methods
-        async private Task<List<Record>> ParseLordAccelerometerData(string[] data) =>
+        private static async Task<List<Record>> ParseLordAccelerometerData(string[] data) =>
 
             await Task.Run(() => data.Skip(29).ToList().ConvertAll(x =>
             {
@@ -62,6 +97,22 @@ namespace SignalDataPicker.service.implementation
                 };
             }
             ));
+
+        private async Task<bool> SaveSeismoSignalData(string fileName, List<double> data)
+        {
+            bool success = false;
+            try
+            {
+                await File.WriteAllLinesAsync(fileName, data.ConvertAll(q => q.ToString(CultureInfo.InvariantCulture)));
+                success = true;
+            }
+            catch (Exception ex)
+            {
+                m_LogService.LogError($"Error saving file {fileName}: {ex.Message}");
+            }
+            return success;
+        }
+
         #endregion
 
         #region Fields
