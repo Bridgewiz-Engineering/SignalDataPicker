@@ -21,13 +21,14 @@ namespace SignalDataPicker.viewmodel
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
         public bool IsWorking { get => m_IsWorking; private set => SetProperty(ref m_IsWorking, value); }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
-        public DataAxis SelectedAxis { get => m_SelectedAxis; set { SetProperty(ref m_SelectedAxis, value); PlotActiveAxis(); } }
+        public DataAxis SelectedAxis { get => m_SelectedAxis; set { SetProperty(ref m_SelectedAxis, value); UpdateData(); } }
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public int StartIndex { get => m_StartIndex; set => SetProperty(ref m_StartIndex, value); }
         public int EndIndex { get => m_EndIndex; set => SetProperty(ref m_EndIndex, value); }
         public int StartIndexMaximum { get => m_StartIndexMaximum; private set => SetProperty(ref m_StartIndexMaximum, value); }
         public int EndIndexMaximum { get => m_EndIndexMaximum; private set => SetProperty(ref m_EndIndexMaximum, value); }
         public ISeries[] PlotSeries { get => m_PlotSeries; private set => SetProperty(ref m_PlotSeries, value); }
+        public DataMetrics? DataMetrics { get => m_DataMetrics; private set => SetProperty(ref m_DataMetrics, value); }
 
         #endregion
 
@@ -57,7 +58,7 @@ namespace SignalDataPicker.viewmodel
                 EndIndex = m_FileData.Data.Count;
                 StartIndexMaximum = m_FileData.Data.Count;
                 EndIndexMaximum = m_FileData.Data.Count;
-                PlotActiveAxis();
+                UpdateData();
             }
 
         }
@@ -72,6 +73,19 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Private Methods
+
+        private void UpdateData()
+        {
+            PlotActiveAxis();
+            var axisData = SelectedAxis switch
+            {
+                DataAxis.X => m_FileData!.Data.Select(p => p.X).ToList(),
+                DataAxis.Y => m_FileData!.Data.Select(p => p.Y).ToList(),
+                DataAxis.Z => m_FileData!.Data.Select(p => p.Z).ToList(),
+                _ => Array.Empty<double>().ToList()
+            };
+            _ = Task.Run(async () => DataMetrics = await m_AnalysisService.CalculateDataMetrics(axisData, SelectedAxis));
+        }
         private void PlotActiveAxis()
         {
             if (m_FileData == null || m_FileData.Data.Count == 0) return;
@@ -115,6 +129,7 @@ namespace SignalDataPicker.viewmodel
         private FileData? m_FileData = null;
         private FileType m_SelectedFileType = FileType.LordAccelerometer;
         private DataAxis m_SelectedAxis = DataAxis.X;
+        private DataMetrics? m_DataMetrics = null;
 
 
         private int m_StartIndex = 1;

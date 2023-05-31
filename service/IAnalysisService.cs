@@ -1,12 +1,11 @@
-﻿using System;
+﻿using SignalDataPicker.model;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.service
 {
     internal interface IAnalysisService
     {
+        Task<DataMetrics> CalculateDataMetrics(List<double> data, DataAxis axis);
     }
 }

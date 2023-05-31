@@ -60,11 +60,7 @@ namespace SignalDataPicker
 
             if (filteredRecords.Count == 0)
             {
-                txtMin.Text = "-";
-                txtMax.Text = "-";
-                txtMean.Text = "-";
-                txtStd.Text = "-";
-                txtRMS.Text = "-";
+
                 return;
             }
 
@@ -86,11 +82,6 @@ namespace SignalDataPicker
 
             }
 
-            txtMin.Text = Math.Round(selectedData.Min(), res_decimal).ToString();
-            txtMax.Text = Math.Round(selectedData.Max(), res_decimal).ToString();
-            txtMean.Text = Math.Round(selectedData.Average(), res_decimal).ToString();
-            txtStd.Text = Math.Round(CalculateStDev(selectedData), res_decimal).ToString();
-            txtRMS.Text = Math.Round(CalculateRMS(selectedData, cmbDirection.SelectedIndex), res_decimal).ToString();
         }
         private void PlotActiveAxis()
         {
