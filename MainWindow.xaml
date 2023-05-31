@@ -38,11 +38,11 @@
         <ComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" ItemsSource="{Binding OutputTypes}" SelectedItem="{Binding SelectedOutputType}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="{Binding StartIndex}" Maximum="{Binding StartIndexMaximum}" Name="txtStartIndex" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" KeyUp="txtStartIndex_KeyUp" UpDownButtonsFocusable="False" />
+        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="{Binding StartIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" Maximum="{Binding StartIndexMaximum}" Name="txtStartIndex" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" UpDownButtonsFocusable="False" />
 
 
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex}" Name="txtEndIndex" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True" KeyUp="txtStartIndex_KeyUp" />
+        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" Name="txtEndIndex" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True"  />
         <Button x:Name="btnSave" Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Command="{Binding SaveFileCommand}" />
 
         

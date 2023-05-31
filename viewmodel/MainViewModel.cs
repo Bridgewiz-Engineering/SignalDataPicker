@@ -1,15 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SignalDataPicker.model;
-using SignalDataPicker.service;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using SignalDataPicker.model;
+using SignalDataPicker.service;
 using SkiaSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace SignalDataPicker.viewmodel
 {
@@ -26,8 +26,8 @@ namespace SignalDataPicker.viewmodel
         public OutputType SelectedOutputType { get => m_SelectedOutputType; set => SetProperty(ref m_SelectedOutputType, value); }
         public DataAxis SelectedAxis { get => m_SelectedAxis; set { SetProperty(ref m_SelectedAxis, value); UpdateData(); } }
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
-        public int StartIndex { get => m_StartIndex; set => SetProperty(ref m_StartIndex, value); }
-        public int EndIndex { get => m_EndIndex; set => SetProperty(ref m_EndIndex, value); }
+        public int StartIndex { get => m_StartIndex; set { SetProperty(ref m_StartIndex, value); RecalculateMetrics(); } }
+        public int EndIndex { get => m_EndIndex; set { SetProperty(ref m_EndIndex, value); RecalculateMetrics(); } }
         public int StartIndexMaximum { get => m_StartIndexMaximum; private set => SetProperty(ref m_StartIndexMaximum, value); }
         public int EndIndexMaximum { get => m_EndIndexMaximum; private set => SetProperty(ref m_EndIndexMaximum, value); }
         public ISeries[] PlotSeries { get => m_PlotSeries; private set => SetProperty(ref m_PlotSeries, value); }
@@ -35,18 +35,17 @@ namespace SignalDataPicker.viewmodel
 
         #endregion
 
-        public MainViewModel(IAnalysisService analysisService, IFileService fileService, ILogService logService, IWindowService windowService)
+        public MainViewModel(IAnalysisService analysisService, IFileService fileService, IWindowService windowService)
         {
             m_AnalysisService = analysisService;
             m_FileService = fileService;
-            m_LogService = logService;
             m_WindowService = windowService;
             m_PlotSeries = Array.Empty<ISeries>();
 
             m_LoadFileCommand = new AsyncRelayCommand(LoadFileAsync, LoadFileAsyncCanExecute);
             m_SaveFileCommand = new AsyncRelayCommand(SaveFileAsync, SaveFileAsyncCanExecute);
 
-            m_AsyncRelayCommands = new IAsyncRelayCommand[] {  m_LoadFileCommand, m_SaveFileCommand };
+            m_AsyncRelayCommands = new IAsyncRelayCommand[] { m_LoadFileCommand, m_SaveFileCommand };
             m_RelayCommands = Array.Empty<IRelayCommand>();
         }
 
@@ -84,14 +83,6 @@ namespace SignalDataPicker.viewmodel
                 return;
             }
 
-            m_FileData.FilteredData = m_SelectedAxis switch
-            {
-                DataAxis.X => m_FileData.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.X).ToList(),
-                DataAxis.Y => m_FileData.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.Y).ToList(),
-                DataAxis.Z => m_FileData.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.Z).ToList(),
-                _ => Array.Empty<double>().ToList()
-            };
-
             var result = await m_FileService.SaveFile(m_FileData, m_SelectedOutputType, m_SelectedAxis, m_StartIndex, m_EndIndex);
             if (!result)
                 m_WindowService.ShowErrorDialog("Dosya kaydedilemedi.");
@@ -127,14 +118,26 @@ namespace SignalDataPicker.viewmodel
         {
             UpdateCommandStates();
             PlotActiveAxis();
-            var axisData = SelectedAxis switch
+            RecalculateMetrics();
+        }
+        private void RecalculateMetrics()
+        {
+            if (m_FileData == null || m_FileData.AllData.Count == 0) DataMetrics = null;
+            else if (m_StartIndex >= m_EndIndex) DataMetrics = null;
+            else if (m_StartIndex < 0 || m_EndIndex < 0) DataMetrics = null;
+
+            else
             {
-                DataAxis.X => m_FileData!.AllData.Select(p => p.X).ToList(),
-                DataAxis.Y => m_FileData!.AllData.Select(p => p.Y).ToList(),
-                DataAxis.Z => m_FileData!.AllData.Select(p => p.Z).ToList(),
-                _ => Array.Empty<double>().ToList()
-            };
-            _ = Task.Run(async () => DataMetrics = await m_AnalysisService.CalculateDataMetrics(axisData, SelectedAxis));
+                m_FileData.FilteredData = SelectedAxis switch
+                {
+                    DataAxis.X => m_FileData!.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.X).ToList(),
+                    DataAxis.Y => m_FileData!.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.Y).ToList(),
+                    DataAxis.Z => m_FileData!.AllData.GetRange(m_StartIndex - 1, m_EndIndex - m_StartIndex).Select(p => p.Z).ToList(),
+                    _ => Array.Empty<double>().ToList()
+                };
+                _ = Task.Run(async () => DataMetrics = await m_AnalysisService.CalculateDataMetrics(m_FileData, SelectedAxis));
+            }
+
         }
         private void PlotActiveAxis()
         {
@@ -169,12 +172,11 @@ namespace SignalDataPicker.viewmodel
         #region Fields
         private readonly IAnalysisService m_AnalysisService;
         private readonly IFileService m_FileService;
-        private readonly ILogService m_LogService;
         private readonly IWindowService m_WindowService;
 
 
-        private IAsyncRelayCommand m_LoadFileCommand;
-        private IAsyncRelayCommand m_SaveFileCommand;
+        private readonly IAsyncRelayCommand m_LoadFileCommand;
+        private readonly IAsyncRelayCommand m_SaveFileCommand;
 
         private bool m_IsWorking = false;
         private FileData? m_FileData = null;
