@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace SignalDataPicker
+namespace SignalDataPicker.model
 {
     public class Record
     {
-        public string TimeStamp { get; set; } = String.Empty;
+        public string TimeStamp { get; set; } = string.Empty;
         public int Index { get; set; }
         public double X { get; set; }
         public double Y { get; set; }

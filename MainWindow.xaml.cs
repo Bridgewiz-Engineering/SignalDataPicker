@@ -4,6 +4,8 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using MahApps.Metro.Controls;
 using Microsoft.Win32;
+using SignalDataPicker.model;
+using SignalDataPicker.viewmodel;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
@@ -29,6 +31,7 @@ namespace SignalDataPicker
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = App.Current.ServiceProvider.GetService(typeof(MainViewModel));
         }
 
         private void btnSelectFile_Click(object sender, RoutedEventArgs e)

@@ -5,8 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-        xmlns:local="clr-namespace:SignalDataPicker"
-        mc:Ignorable="d"
+        xmlns:local="clr-namespace:SignalDataPicker" xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
+                 mc:Ignorable="d"
         Title="Sinyal Veri Ayıklama" Height="768" Width="1024">
     <Grid>
         <Grid.RowDefinitions>
@@ -26,10 +26,8 @@
         
         <TextBlock Grid.Row="0" Grid.Column="0" Margin="4" Text="Dosya:" VerticalAlignment="Center" />
         <TextBox Grid.Row="0" Grid.Column="1" Margin="4" Name="txtFileName" IsReadOnly="True" />
-        <ComboBox Grid.Row="0" Grid.Column="2" Margin="4" >
-            <ComboBoxItem Name="BridgewizSensors" Content="Bridgewiz Ivme Olcer" IsSelected="True" />
-        </ComboBox>
-        <Button Grid.Row="0" Grid.Column="3" Margin="4" Name="btnSelectFile" Content="..." Click="btnSelectFile_Click" />
+        <ComboBox Grid.Row="0" Grid.Column="2" Margin="4" ItemsSource="{Binding FileTypes}" SelectedItem="{Binding SelectedFileType}" />
+        <Button Grid.Row="0" Grid.Column="3" Margin="4" Name="btnSelectFile" Content="..." Command="{Binding LoadFileCommand}" />
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="Yön:" VerticalAlignment="Center" />
         <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection" SelectionChanged="cmbDirection_SelectionChanged">
