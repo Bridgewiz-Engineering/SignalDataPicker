@@ -27,27 +27,25 @@
         <Grid.Resources>
             <converters:DataMetricsToTextConverter x:Key="DataMetricsToTextConverter" />
         </Grid.Resources>
-        
+
         <TextBlock Grid.Row="0" Grid.Column="0" Margin="4" Text="Dosya:" VerticalAlignment="Center" />
-        <TextBox Grid.Row="0" Grid.Column="1" Margin="4" Name="txtFileName" IsReadOnly="True" Text="{Binding FileData.FileName}" />
+        <TextBox Grid.Row="0" Grid.Column="1" Margin="4" IsReadOnly="True" Text="{Binding FileData.FileName}" />
         <ComboBox Grid.Row="0" Grid.Column="2" Margin="4" ItemsSource="{Binding FileTypes}" SelectedItem="{Binding SelectedFileType}" />
-        <Button Grid.Row="0" Grid.Column="3" Margin="4" Name="btnSelectFile" Content="..." Command="{Binding LoadFileCommand}" />
+        <Button Grid.Row="0" Grid.Column="3" Margin="4" Content="..." Command="{Binding LoadFileCommand}" />
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="Yön:" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedAxis}" />
-        <ComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" ItemsSource="{Binding OutputTypes}" SelectedItem="{Binding SelectedOutputType}"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedAxis}" />
+        <ComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" Margin="4" ItemsSource="{Binding OutputTypes}" SelectedItem="{Binding SelectedOutputType}"/>
 
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="{Binding StartIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" Maximum="{Binding StartIndexMaximum}" Name="txtStartIndex" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" UpDownButtonsFocusable="False" />
+        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="{Binding StartIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=100}" Maximum="{Binding StartIndexMaximum}" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" UpDownButtonsFocusable="False" />
 
 
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=500}" Name="txtEndIndex" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True"  />
+        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=100}" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True"  />
         <Button x:Name="btnSave" Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Command="{Binding SaveFileCommand}" />
 
-        
-        
-        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" Name="lvcChart" ZoomMode="X" Series="{Binding PlotSeries}" />
+        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" ZoomMode="X" Series="{Binding PlotSeries}" />
 
         <TextBlock Grid.Row="5" Grid.Column="0" Margin="4" Grid.ColumnSpan="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Path=DataMetrics, Converter={StaticResource DataMetricsToTextConverter}}" />
 

@@ -6,7 +6,6 @@ namespace SignalDataPicker.model
     {
         public string FileName { get; set; } = string.Empty;
         public List<Record> AllData { get; set; } = new List<Record>();
-
         public List<double> FilteredData { get; set; } = new List<double>();
     }
 }

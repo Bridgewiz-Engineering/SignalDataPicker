@@ -35,6 +35,7 @@ namespace SignalDataPicker.viewmodel
 
         #endregion
 
+        #region Lifecycle
         public MainViewModel(IAnalysisService analysisService, IFileService fileService, IWindowService windowService)
         {
             m_AnalysisService = analysisService;
@@ -48,7 +49,7 @@ namespace SignalDataPicker.viewmodel
             m_AsyncRelayCommands = new IAsyncRelayCommand[] { m_LoadFileCommand, m_SaveFileCommand };
             m_RelayCommands = Array.Empty<IRelayCommand>();
         }
-
+        #endregion
 
         #region Command Handlers
         async private Task LoadFileAsync()
@@ -88,7 +89,6 @@ namespace SignalDataPicker.viewmodel
                 m_WindowService.ShowErrorDialog("Dosya kaydedilemedi.");
         }
         #endregion
-
 
         #region Command States
         private bool LoadFileAsyncCanExecute()
@@ -167,7 +167,6 @@ namespace SignalDataPicker.viewmodel
 
         }
         #endregion
-
 
         #region Fields
         private readonly IAnalysisService m_AnalysisService;

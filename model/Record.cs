@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SignalDataPicker.model
+﻿namespace SignalDataPicker.model
 {
     public class Record
     {

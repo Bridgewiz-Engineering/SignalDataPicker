@@ -1,5 +1,4 @@
 ﻿using SignalDataPicker.model;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.service
