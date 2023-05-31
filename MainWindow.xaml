@@ -49,5 +49,7 @@
 
         <TextBlock Grid.Row="5" Grid.Column="0" Margin="4" Grid.ColumnSpan="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Path=DataMetrics, Converter={StaticResource DataMetricsToTextConverter}}" />
 
+        <mah:MetroProgressBar Grid.Row="5" Grid.Column="2" IsIndeterminate="{Binding IsWorking}" Margin="4" Visibility="{Binding IsWorking, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
     </Grid>
 </mah:MetroWindow>

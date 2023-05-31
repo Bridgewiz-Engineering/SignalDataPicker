@@ -21,7 +21,7 @@ namespace SignalDataPicker.viewmodel
         public static List<OutputType> OutputTypes { get => Enum.GetValues(typeof(OutputType)).Cast<OutputType>().ToList(); }
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
         public IAsyncRelayCommand SaveFileCommand { get => m_SaveFileCommand; }
-        public bool IsWorking { get => m_IsWorking; private set => SetProperty(ref m_IsWorking, value); }
+        public bool IsWorking { get => m_IsWorking; private set { SetProperty(ref m_IsWorking, value); UpdateCommandStates(); } }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
         public OutputType SelectedOutputType { get => m_SelectedOutputType; set => SetProperty(ref m_SelectedOutputType, value); }
         public DataAxis SelectedAxis { get => m_SelectedAxis; set { SetProperty(ref m_SelectedAxis, value); UpdateData(); } }
@@ -54,6 +54,7 @@ namespace SignalDataPicker.viewmodel
         #region Command Handlers
         async private Task LoadFileAsync()
         {
+            IsWorking = true;
             FileData = await m_FileService.LoadFile(m_SelectedFileType);
 
             if (m_FileData == null)
@@ -67,10 +68,12 @@ namespace SignalDataPicker.viewmodel
                 EndIndexMaximum = m_FileData.AllData.Count;
                 UpdateData();
             }
+            IsWorking = false;
         }
 
         async private Task SaveFileAsync()
         {
+            IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) return;
 
             if (m_StartIndex > m_EndIndex)
@@ -87,6 +90,7 @@ namespace SignalDataPicker.viewmodel
             var result = await m_FileService.SaveFile(m_FileData, m_SelectedOutputType, m_SelectedAxis, m_StartIndex, m_EndIndex);
             if (!result)
                 m_WindowService.ShowErrorDialog("Dosya kaydedilemedi.");
+            IsWorking = false;
         }
         #endregion
 
@@ -103,11 +107,11 @@ namespace SignalDataPicker.viewmodel
         {
             foreach (var command in m_AsyncRelayCommands)
             {
-                command.NotifyCanExecuteChanged();
+                App.Current.Dispatcher.Invoke(() => command.NotifyCanExecuteChanged());
             }
             foreach (var command in m_RelayCommands)
             {
-                command.NotifyCanExecuteChanged();
+                App.Current.Dispatcher.Invoke(() => command.NotifyCanExecuteChanged());
             }
         }
         #endregion
@@ -118,10 +122,11 @@ namespace SignalDataPicker.viewmodel
         {
             UpdateCommandStates();
             PlotActiveAxis();
-            RecalculateMetrics();
+            _ = Task.Run(()=>RecalculateMetrics());
         }
         private void RecalculateMetrics()
         {
+            IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) DataMetrics = null;
             else if (m_StartIndex >= m_EndIndex) DataMetrics = null;
             else if (m_StartIndex < 0 || m_EndIndex < 0) DataMetrics = null;
@@ -137,10 +142,11 @@ namespace SignalDataPicker.viewmodel
                 };
                 _ = Task.Run(async () => DataMetrics = await m_AnalysisService.CalculateDataMetrics(m_FileData, SelectedAxis));
             }
-
+            IsWorking = false;
         }
         private void PlotActiveAxis()
         {
+            IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) return;
 
             double[] data = m_SelectedAxis switch
@@ -164,7 +170,7 @@ namespace SignalDataPicker.viewmodel
                     TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Context.Entity.EntityIndex}"
                 }
             };
-
+            IsWorking = false;
         }
         #endregion
 
