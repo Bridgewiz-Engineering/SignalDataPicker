@@ -14,10 +14,15 @@ namespace SignalDataPicker.viewmodel
         #region Properties
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
 
-        public bool IsWorking { get => m_IsWorking; }
-        public string FileName { get => m_FileName; }
+        public bool IsWorking { get => m_IsWorking; private set => SetProperty(ref m_IsWorking, value);     }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
-        public List<FileType> FileTypes { get => Enum.GetValues(typeof(FileType)).Cast<FileType>().ToList(); }
+        public static List<FileType> FileTypes { get => Enum.GetValues(typeof(FileType)).Cast<FileType>().ToList(); }
+        public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
+        public int StartIndex { get => m_StartIndex; set => SetProperty(ref m_StartIndex, value); }
+        public int EndIndex { get => m_EndIndex; set => SetProperty(ref m_EndIndex, value); }
+        public int StartIndexMaximum { get => m_StartIndexMaximum; private set => SetProperty(ref m_StartIndexMaximum, value); }    
+        public int EndIndexMaximum { get => m_EndIndexMaximum; private set => SetProperty(ref m_EndIndexMaximum, value); }
+
         #endregion
 
         public MainViewModel(IAnalysisService analysisService, IFileService fileService, ILogService logService, IWindowService windowService)
@@ -34,11 +39,17 @@ namespace SignalDataPicker.viewmodel
         #region Command Handlers
         async private Task LoadFileAsync()
         {
-            m_FileData = await m_FileService.LoadFile(m_SelectedFileType);
+            FileData = await m_FileService.LoadFile(m_SelectedFileType);
 
             if (m_FileData == null)
             {
                 m_WindowService.ShowErrorDialog("Dosya yüklenemedi.");
+            }
+            else
+            {
+                EndIndex = m_FileData.Data.Count;
+                StartIndexMaximum = m_FileData.Data.Count;
+                EndIndexMaximum = m_FileData.Data.Count;
             }
 
         }
@@ -65,11 +76,14 @@ namespace SignalDataPicker.viewmodel
         private IAsyncRelayCommand m_LoadFileCommand;
 
         private bool m_IsWorking = false;
-        private string m_FileName = string.Empty;
         private FileData? m_FileData = null;
         private FileType m_SelectedFileType = FileType.LordAccelerometer;
 
-        private const int m_MaxDecimals = 5;
+        
+        private int m_StartIndex = 1;
+        private int m_EndIndex = 1;
+        private int m_StartIndexMaximum = 1;
+        private int m_EndIndexMaximum = 1;
         #endregion
     }
 }
