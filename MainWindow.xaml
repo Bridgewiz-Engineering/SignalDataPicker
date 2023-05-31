@@ -30,12 +30,7 @@
         <Button Grid.Row="0" Grid.Column="3" Margin="4" Name="btnSelectFile" Content="..." Command="{Binding LoadFileCommand}" />
 
         <TextBlock Grid.Row="1" Grid.Column="0" Margin="4" Text="Yön:" VerticalAlignment="Center" />
-        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection" SelectionChanged="cmbDirection_SelectionChanged">
-            <ComboBoxItem Name="X" Content="X" />
-            <ComboBoxItem Name="Y" Content="Y" />
-            <ComboBoxItem Name="Z" Content="Z" />
-        </ComboBox>
-        
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="4" SelectedIndex="0" Name="cmbDirection" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedAxis}" />
         <ComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" SelectedIndex="0">
             <ComboBoxItem Name="seismoSignal" Content="SeismoSignal" />
         </ComboBox>
@@ -50,7 +45,7 @@
 
         
         
-        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" Name="lvcChart" ZoomMode="X" />
+        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" Name="lvcChart" ZoomMode="X" Series="{Binding PlotSeries}" />
 
         <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center">
             <TextBlock Text="Mean:" Margin="4"/>
