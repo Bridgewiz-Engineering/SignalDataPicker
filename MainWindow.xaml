@@ -15,6 +15,7 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="auto" />
@@ -36,17 +37,35 @@
             <ComboBoxItem Name="Y" Content="Y" />
             <ComboBoxItem Name="Z" Content="Z" />
         </ComboBox>
-
-        <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="0" Name="txtStartIndex" Minimum="1" />
-
-        <ComboBox Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" SelectedIndex="0">
+        
+        <ComboBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Name="cmbOutputType" Margin="4" SelectedIndex="0">
             <ComboBoxItem Name="seismoSignal" Content="SeismoSignal" />
         </ComboBox>
-        <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
-        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="0" Name="txtEndIndex" Minimum="1" />
-        <Button Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Click="Button_Click" />
+        
+        <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
+        <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="0" Name="txtStartIndex" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" KeyUp="txtStartIndex_KeyUp" UpDownButtonsFocusable="False" />
 
+
+        <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
+        <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="0" Name="txtEndIndex" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" KeyUp="txtStartIndex_KeyUp" />
+        <Button x:Name="btnSave" Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Click="Button_Click" />
+
+        
+        
         <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" Name="lvcChart" ZoomMode="X" />
+
+        <StackPanel Orientation="Horizontal" Grid.Row="5" Grid.Column="0" Grid.ColumnSpan="4" HorizontalAlignment="Center">
+            <TextBlock Text="Mean:" Margin="4"/>
+            <TextBlock x:Name="txtMean" Margin="4"/>
+            <TextBlock Text="Min:" Margin="4"/>
+            <TextBlock x:Name="txtMin" Margin="4"/>
+            <TextBlock Text="Max:" Margin="4"/>
+            <TextBlock x:Name="txtMax" Margin="4"/>
+            <TextBlock Text="Std. Dev:" Margin="4"/>
+            <TextBlock x:Name="txtStd" Margin="4"/>
+            <TextBlock Text="RMS:" Margin="4"/>
+            <TextBlock x:Name="txtRMS" Margin="4"/>
+        </StackPanel>
+        
     </Grid>
 </mah:MetroWindow>
