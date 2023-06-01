@@ -37,7 +37,7 @@ namespace SignalDataPicker.service.implementation
             try
             {
                 if (fileData == null || fileData.FilteredData.Count < 2)
-                    result.ErrorMessage = "No file data to process.";
+                    result.ErrorMessage = "İşlenecek veri yok";
                 else
                 {
                     var nearestPowerOfTwo = GetNextPowerOfTwo(fileData.FilteredData.Count);
@@ -50,7 +50,7 @@ namespace SignalDataPicker.service.implementation
 
                     await Task.Run(() => fft.Direct(real, imag));
 
-                    List<double[]> fftResult = new List<double[]>();
+                    List<double[]> fftResult = new();
 
                     var frequency = GenerateFrequencyAxis(nearestPowerOfTwo, fileData.SamplingFrequency);
                     // do not take first 5 data point (DC component)

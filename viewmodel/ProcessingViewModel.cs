@@ -20,7 +20,7 @@ namespace SignalDataPicker.viewmodel
     {
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
-        public int FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
+        public double FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
         public ISeries[] FFTSeries { get => m_FFTSeries; private set => SetProperty(ref m_FFTSeries, value); }
         public ICartesianAxis[] FFTAxesX { get => m_FFTAxesX; private set => SetProperty(ref m_FFTAxesX, value); }
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
@@ -65,21 +65,18 @@ namespace SignalDataPicker.viewmodel
             {
                 var points = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
                 var maxAmp = points.Max(p => p.Y);
-                FFTMaxFrequency = Convert.ToInt32(points.Find(q => q.Y == maxAmp)?.X ?? -1);
+                FFTMaxFrequency = points.Find(q => q.Y == maxAmp)?.X ?? -1;
                 
                 FFTSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
                     {
-                        
                         Fill = null,
                         Values = points,
                         Stroke = new SolidColorPaint(SKColors.Blue) { StrokeThickness = 1},
                         GeometryFill = null,
                         GeometryStroke = null,
                         LineSmoothness = 0,
-                        
-                        
                         TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X}"
                     }
                 };
@@ -120,7 +117,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
 
-        private int m_FFTMaxFrequency;
+        private double m_FFTMaxFrequency;
         #endregion
     }
 }
