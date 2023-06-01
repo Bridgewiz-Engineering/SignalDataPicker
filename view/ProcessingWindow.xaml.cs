@@ -1,6 +1,5 @@
 ﻿using SignalDataPicker.model;
 using SignalDataPicker.viewmodel;
-using System.Windows;
 
 namespace SignalDataPicker.view
 {

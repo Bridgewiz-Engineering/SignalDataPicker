@@ -10,7 +10,6 @@ using SignalDataPicker.model;
 using SignalDataPicker.service;
 using SkiaSharp;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,7 +25,7 @@ namespace SignalDataPicker.viewmodel
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
 
-        public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray)};
+        public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
 
         public ProcessingViewModel(IAnalysisService analysisService, IWindowService windowService)
         {
@@ -38,7 +37,7 @@ namespace SignalDataPicker.viewmodel
 
             m_FFTAxesX = new Axis[] { new() { Name = "Hz" } };
             m_FFTAxesY = new Axis[] { new() };
-            
+
         }
 
         public void SetFileData(FileData fileData)
@@ -66,7 +65,7 @@ namespace SignalDataPicker.viewmodel
                 var points = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
                 var maxAmp = points.Max(p => p.Y);
                 FFTMaxFrequency = points.Find(q => q.Y == maxAmp)?.X ?? -1;
-                
+
                 FFTSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
@@ -106,7 +105,7 @@ namespace SignalDataPicker.viewmodel
 
 
         #region Fields
-        
+
         private FileData? m_FileData;
         private bool m_IsProcessing;
         private bool m_IsFileDataLoaded;

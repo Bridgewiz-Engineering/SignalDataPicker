@@ -29,7 +29,6 @@
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="Maksimum Frekans (Hz)" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding FFTMaxFrequency, StringFormat='F2'}" Margin="4" HorizontalAlignment="Center" />
-            <Line Stroke="Black" StrokeThickness="1" Margin="4" />
             <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>

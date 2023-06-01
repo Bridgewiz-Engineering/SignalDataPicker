@@ -71,7 +71,12 @@ namespace SignalDataPicker.service.implementation
                     fileData = new FileData
                     {
                         FileName = fileName,
-                        AllData = data ?? new List<Record>()
+                        AllData = data ?? new List<Record>(),
+                        SamplingFrequency = fileType switch
+                        {
+                            FileType.LordAccelerometer => await ParseLordAccelerometerSampleRate(allData),
+                            _ => 128
+                        }
                     };
                 }
                 catch (Exception ex)
@@ -82,21 +87,25 @@ namespace SignalDataPicker.service.implementation
             return fileData;
         }
         #region Private Methods
-        private static async Task<List<Record>> ParseLordAccelerometerData(string[] data) =>
+        private async static Task<int> ParseLordAccelerometerSampleRate(string[] data) =>
+            await Task.Run(() => int.Parse(data[21].Split(';')[2][..^2], CultureInfo.InvariantCulture));
 
-            await Task.Run(() => data.Skip(29).ToList().ConvertAll(x =>
+
+    private async static Task<List<Record>> ParseLordAccelerometerData(string[] data) =>
+
+        await Task.Run(() => data.Skip(29).ToList().ConvertAll(x =>
+        {
+            var splitted = x.Split(';');
+            return new Record
             {
-                var splitted = x.Split(';');
-                return new Record
-                {
-                    TimeStamp = splitted[0],
-                    Index = int.Parse(splitted[1],CultureInfo.InvariantCulture),
-                    X = double.Parse(splitted[2],CultureInfo.InvariantCulture),
-                    Y = double.Parse(splitted[3], CultureInfo.InvariantCulture),
-                    Z = double.Parse(splitted[4], CultureInfo.InvariantCulture)
-                };
-            }
-            ));
+                TimeStamp = splitted[0],
+                Index = int.Parse(splitted[1], CultureInfo.InvariantCulture),
+                X = double.Parse(splitted[2], CultureInfo.InvariantCulture),
+                Y = double.Parse(splitted[3], CultureInfo.InvariantCulture),
+                Z = double.Parse(splitted[4], CultureInfo.InvariantCulture)
+            };
+        }
+        ));
 
         private async Task<bool> SaveSeismoSignalData(string fileName, List<double> data)
         {
