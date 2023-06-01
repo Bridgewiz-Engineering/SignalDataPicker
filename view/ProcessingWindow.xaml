@@ -29,6 +29,9 @@
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="Maksimum Frekans (Hz)" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding FFTMaxFrequency, StringFormat='F2'}" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Frekans Alt Cutoff" Margin="4" HorizontalAlignment="Center" />
+            <Slider Minimum="0" Maximum="10" Value="{Binding FFTDCCutoff}" Margin="4" SmallChange="0.5" LargeChange="1" HorizontalAlignment="Center" Orientation="Horizontal" TickPlacement="BottomRight" Width="100" />
+            <TextBlock Text="{Binding FFTDCCutoff}" Margin="4" HorizontalAlignment="Center" />
             <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>

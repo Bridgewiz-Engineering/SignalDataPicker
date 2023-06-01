@@ -10,6 +10,7 @@ using SignalDataPicker.model;
 using SignalDataPicker.service;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -24,6 +25,7 @@ namespace SignalDataPicker.viewmodel
         public ICartesianAxis[] FFTAxesX { get => m_FFTAxesX; private set => SetProperty(ref m_FFTAxesX, value); }
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
+        public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
 
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
 
@@ -62,16 +64,13 @@ namespace SignalDataPicker.viewmodel
             var data = await m_AnalysisService.Process(FileData!);
             if (data.IsSuccess)
             {
-                var points = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
-                var maxAmp = points.Max(p => p.Y);
-                FFTMaxFrequency = points.Find(q => q.Y == maxAmp)?.X ?? -1;
+                m_FFTPoints = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
 
                 FFTSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
                     {
                         Fill = null,
-                        Values = points,
                         Stroke = new SolidColorPaint(SKColors.Blue) { StrokeThickness = 1},
                         GeometryFill = null,
                         GeometryStroke = null,
@@ -80,7 +79,7 @@ namespace SignalDataPicker.viewmodel
                     }
                 };
                 ResetAxes();
-
+                CutFFT();
             }
             else
             {
@@ -88,6 +87,14 @@ namespace SignalDataPicker.viewmodel
                 m_WindowService.ShowErrorDialog(data.ErrorMessage);
             }
             IsProcessing = false;
+        }
+
+        private void CutFFT()
+        {
+            var cutData = m_FFTPoints?.Where(p => p.X > FFTDCCutoff).ToList();
+            var maxAmp = cutData?.Max(p => p.Y);
+            FFTMaxFrequency = cutData?.Find(q => q.Y == maxAmp)?.X ?? -1;
+            FFTSeries[0].Values = cutData;
         }
 
         private void ResetAxes()
@@ -115,8 +122,9 @@ namespace SignalDataPicker.viewmodel
         private readonly IAnalysisService m_AnalysisService;
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
-
+        private int m_FFTDCCutoff = 1;
         private double m_FFTMaxFrequency;
+        private List<ObservablePoint>? m_FFTPoints;
         #endregion
     }
 }

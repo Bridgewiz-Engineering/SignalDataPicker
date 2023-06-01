@@ -55,7 +55,7 @@ namespace SignalDataPicker.service.implementation
                     var frequency = GenerateFrequencyAxis(nearestPowerOfTwo, fileData.SamplingFrequency);
                     // do not take first 5 data point (DC component)
                     // take only first half of the spectrum
-                    for (int i = m_DCLength; i < nearestPowerOfTwo / 2; i++)
+                    for (int i = 0; i < nearestPowerOfTwo / 2; i++)
                     {
                         var point = new double[2];
                         point[0] = frequency[i];
@@ -105,7 +105,6 @@ namespace SignalDataPicker.service.implementation
 
         #region Fields
         private readonly ILogService m_LogService;
-        private const int m_DCLength = 5;
         #endregion
     }
 }
