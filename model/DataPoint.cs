@@ -1,0 +1,8 @@
+﻿namespace SignalDataPicker.model
+{
+    internal record DataPoint
+    {
+        public double X { get; set; }
+        public double Y { get; set; }
+    }
+}

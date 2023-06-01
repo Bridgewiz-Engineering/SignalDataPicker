@@ -7,7 +7,7 @@ namespace SignalDataPicker.view
     /// <summary>
     /// Interaction logic for ProcessingWindow.xaml
     /// </summary>
-    public partial class ProcessingWindow : Window
+    public partial class ProcessingWindow
     {
         internal ProcessingWindow(FileData fileData)
         {

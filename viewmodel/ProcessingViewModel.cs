@@ -5,11 +5,13 @@ using LiveChartsCore.Defaults;
 using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.SkiaSharpView.VisualElements;
 using SignalDataPicker.model;
 using SignalDataPicker.service;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.viewmodel
@@ -18,10 +20,13 @@ namespace SignalDataPicker.viewmodel
     {
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
-        public ISeries[] PlotSeries { get => m_PlotSeries; private set => SetProperty(ref m_PlotSeries, value); }
-        public ICartesianAxis[] PlotAxesX { get => m_PlotAxesX; private set => SetProperty(ref m_PlotAxesX, value); }
-        public ICartesianAxis[] PlotAxesY { get => m_PlotAxesY; private set => SetProperty(ref m_PlotAxesY, value); }
+        public int FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
+        public ISeries[] FFTSeries { get => m_FFTSeries; private set => SetProperty(ref m_FFTSeries, value); }
+        public ICartesianAxis[] FFTAxesX { get => m_FFTAxesX; private set => SetProperty(ref m_FFTAxesX, value); }
+        public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
+
+        public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray)};
 
         public ProcessingViewModel(IAnalysisService analysisService, IWindowService windowService)
         {
@@ -29,10 +34,10 @@ namespace SignalDataPicker.viewmodel
             m_WindowService = windowService;
 
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
-            m_PlotSeries = Array.Empty<ISeries>();
+            m_FFTSeries = Array.Empty<ISeries>();
 
-            m_PlotAxesX = new Axis[] { new() };
-            m_PlotAxesY = new Axis[] { new() };
+            m_FFTAxesX = new Axis[] { new() { Name = "Hz" } };
+            m_FFTAxesY = new Axis[] { new() };
             
         }
 
@@ -58,13 +63,17 @@ namespace SignalDataPicker.viewmodel
             var data = await m_AnalysisService.Process(FileData!);
             if (data.IsSuccess)
             {
-                PlotSeries = new ISeries[]
+                var points = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
+                var maxAmp = points.Max(p => p.Y);
+                FFTMaxFrequency = Convert.ToInt32(points.Find(q => q.Y == maxAmp)?.X ?? -1);
+                
+                FFTSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
                     {
                         
                         Fill = null,
-                        Values = data.FFTResult.ConvertAll<ObservablePoint>(q=>new ObservablePoint(q[0], q[1])),
+                        Values = points,
                         Stroke = new SolidColorPaint(SKColors.Blue) { StrokeThickness = 1},
                         GeometryFill = null,
                         GeometryStroke = null,
@@ -79,7 +88,7 @@ namespace SignalDataPicker.viewmodel
             }
             else
             {
-                PlotSeries = Array.Empty<ISeries>();
+                FFTSeries = Array.Empty<ISeries>();
                 m_WindowService.ShowErrorDialog(data.ErrorMessage);
             }
             IsProcessing = false;
@@ -87,10 +96,10 @@ namespace SignalDataPicker.viewmodel
 
         private void ResetAxes()
         {
-            m_PlotAxesX[0].MinLimit = null;
-            m_PlotAxesX[0].MaxLimit = null;
-            m_PlotAxesY[0].MinLimit = null;
-            m_PlotAxesY[0].MaxLimit = null;
+            m_FFTAxesX[0].MinLimit = null;
+            m_FFTAxesX[0].MaxLimit = null;
+            m_FFTAxesY[0].MinLimit = null;
+            m_FFTAxesY[0].MaxLimit = null;
         }
 
         private bool ProcessCanExecute()
@@ -100,15 +109,18 @@ namespace SignalDataPicker.viewmodel
 
 
         #region Fields
+        
         private FileData? m_FileData;
         private bool m_IsProcessing;
         private bool m_IsFileDataLoaded;
-        private ICartesianAxis[] m_PlotAxesX;
-        private ICartesianAxis[] m_PlotAxesY;
-        private ISeries[] m_PlotSeries;
+        private ICartesianAxis[] m_FFTAxesX;
+        private ICartesianAxis[] m_FFTAxesY;
+        private ISeries[] m_FFTSeries;
         private readonly IAnalysisService m_AnalysisService;
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
+
+        private int m_FFTMaxFrequency;
         #endregion
     }
 }

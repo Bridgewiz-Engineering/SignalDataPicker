@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.Kernel.Sketches;
-using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SignalDataPicker.model;
@@ -11,7 +10,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -192,12 +190,12 @@ namespace SignalDataPicker.viewmodel
         private void RecalculateMetrics()
         {
             if (!m_ShouldRecalculateMetrics) return;
-            
+
             IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) DataMetrics = null;
             else if (m_StartIndex >= m_EndIndex) DataMetrics = null;
             else if (m_StartIndex < 0 || m_EndIndex < 0) DataMetrics = null;
-            
+
             else
             {
                 m_FileData.FilteredData = SelectedAxis switch
