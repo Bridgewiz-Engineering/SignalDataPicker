@@ -40,7 +40,7 @@
 
         <TextBlock Grid.Row="2" Grid.Column="0" Margin="4" Text="Başlangıç:" VerticalAlignment="Center" />
         <mah:NumericUpDown Grid.Row="2" Grid.Column="1" Margin="4" Value="{Binding StartIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=100}" Maximum="{Binding StartIndexMaximum}" Minimum="1" NumericInputMode="Numbers" HideUpDownButtons="True" UpDownButtonsFocusable="False" />
-
+        <Button Content="İşle" Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2" Margin="4" Command="{Binding ShowProcessingWindowCommand}" />
 
         <TextBlock Grid.Row="3" Grid.Column="0" Margin="4" Text="Bitiş:" VerticalAlignment="Center" />
         <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=100}" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True"  />

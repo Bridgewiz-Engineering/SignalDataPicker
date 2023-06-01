@@ -26,6 +26,7 @@ namespace SignalDataPicker.viewmodel
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
         public IAsyncRelayCommand SaveFileCommand { get => m_SaveFileCommand; }
         public IRelayCommand ResetBoundsCommand { get => m_ResetBoundsCommand; }
+        public IRelayCommand ShowProcessingWindowCommand { get => m_ShowProcessingWindowCommand; }
         public bool IsWorking { get => m_IsWorking; private set { SetProperty(ref m_IsWorking, value); UpdateCommandStates(); } }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
         public OutputType SelectedOutputType { get => m_SelectedOutputType; set => SetProperty(ref m_SelectedOutputType, value); }
@@ -53,9 +54,10 @@ namespace SignalDataPicker.viewmodel
             m_LoadFileCommand = new AsyncRelayCommand(LoadFileAsync, LoadFileAsyncCanExecute);
             m_SaveFileCommand = new AsyncRelayCommand(SaveFileAsync, SaveFileAsyncCanExecute);
             m_ResetBoundsCommand = new RelayCommand(ResetBounds, ResetBoundsCanExecute);
+            m_ShowProcessingWindowCommand = new RelayCommand(ShowProcessingWindow, ShowProcessingWindowCanExecute);
 
             m_AsyncRelayCommands = new IAsyncRelayCommand[] { m_LoadFileCommand, m_SaveFileCommand };
-            m_RelayCommands = Array.Empty<IRelayCommand>();
+            m_RelayCommands = new IRelayCommand[] { m_ResetBoundsCommand, m_ShowProcessingWindowCommand };
 
             var axis = new Axis();
             axis.PropertyChanged += Axis_PropertyChanged;
@@ -92,6 +94,11 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command Handlers
+
+        private void ShowProcessingWindow()
+        {
+            m_WindowService.ShowProcessingWindow(m_FileData!);
+        }
 
         private void ResetBounds()
         {
@@ -143,6 +150,11 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command States
+
+        private bool ShowProcessingWindowCanExecute()
+        {
+            return !m_IsWorking && m_FileData != null && m_FileData.FilteredData.Count > 2;
+        }
 
         private bool ResetBoundsCanExecute()
         {
@@ -237,6 +249,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IAsyncRelayCommand m_LoadFileCommand;
         private readonly IAsyncRelayCommand m_SaveFileCommand;
         private readonly IRelayCommand m_ResetBoundsCommand;
+        private readonly IRelayCommand m_ShowProcessingWindowCommand;
 
         private bool m_IsWorking = false;
         private FileData? m_FileData = null;

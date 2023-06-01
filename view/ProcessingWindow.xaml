@@ -1,0 +1,31 @@
+﻿<Window x:Class="SignalDataPicker.view.ProcessingWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SignalDataPicker.view"
+        xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF" xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel" d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
+        mc:Ignorable="d"
+        Title="ProcessingWindow" Height="450" Width="800">
+    <behaviors:Interaction.Triggers>
+        <behaviors:EventTrigger EventName="Loaded">
+            <behaviors:InvokeCommandAction Command="{Binding ProcessCommand}"/>
+        </behaviors:EventTrigger>
+    </behaviors:Interaction.Triggers>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+
+        <lvc:CartesianChart Margin="4" Series="{Binding PlotSeries}" ZoomMode="Both"/>
+
+
+
+    </Grid>
+</Window>

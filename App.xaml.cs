@@ -30,6 +30,7 @@ namespace SignalDataPicker
             services.AddSingleton<ILogService, LogService>();
             services.AddSingleton<IWindowService, WindowService>();
             services.AddTransient<MainViewModel>();
+            services.AddTransient<ProcessingViewModel>();
 
             return services.BuildServiceProvider();
         }
