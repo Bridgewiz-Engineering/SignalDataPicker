@@ -4,11 +4,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                 xmlns:converters="clr-namespace:SignalDataPicker.converter"
-                 xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
-                 xmlns:behavors="http://schemas.microsoft.com/xaml/behaviors"
-                 xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
-                 mc:Ignorable="d"
+        xmlns:converters="clr-namespace:SignalDataPicker.converter"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
+        xmlns:behavors="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:icons="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel" d:DataContext="{d:DesignInstance Type=viewmodel:MainViewModel}"
+        mc:Ignorable="d"
         Title="Sinyal Veri Ayıklama" Height="768" Width="1024">
     <Grid>
         <Grid.RowDefinitions>
@@ -46,13 +47,11 @@
         <mah:NumericUpDown Grid.Row="3" Grid.Column="1" Margin="4" Value="{Binding EndIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, Delay=100}" Minimum="1" Maximum="{Binding EndIndexMaximum}" NumericInputMode="Numbers" HideUpDownButtons="True"  />
         <Button x:Name="btnSave" Grid.Row="3" Grid.Column="2" Content="Kaydet" Grid.ColumnSpan="2" Margin="4" Command="{Binding SaveFileCommand}" />
 
-        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" ZoomMode="X" XAxes="{Binding PlotAxesX}"  Series="{Binding PlotSeries}">
-            <behavors:Interaction.Triggers>
-                <behavors:EventTrigger EventName="MouseDoubleClick">
-                    <behavors:InvokeCommandAction Command="{Binding ResetBoundsCommand}" />
-                </behavors:EventTrigger>
-            </behavors:Interaction.Triggers>
-        </lvc:CartesianChart>
+        <lvc:CartesianChart Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="4" Margin="4" ZoomMode="X" XAxes="{Binding PlotAxesX}"  Series="{Binding PlotSeries}" />
+
+        <Button Grid.Row="4" Grid.Column="3" Margin="4" Width="32" Height="32" Command="{Binding ResetBoundsCommand}" Style="{DynamicResource MahApps.Styles.Button.Circle}" VerticalAlignment="Top" ToolTip="Tüm Grafik">
+            <icons:PackIconMaterial Kind="ArrowExpandAll" />
+        </Button>
 
         <TextBlock Grid.Row="5" Grid.Column="0" Margin="4" Grid.ColumnSpan="4" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{Binding Path=DataMetrics, Converter={StaticResource DataMetricsToTextConverter}}" />
 

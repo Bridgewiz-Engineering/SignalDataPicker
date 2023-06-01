@@ -102,9 +102,9 @@ namespace SignalDataPicker.viewmodel
 
         private void ResetBounds()
         {
-            StartIndex = 1;
-            EndIndex = EndIndexMaximum;
+            m_ShouldRecalculateMetrics = false; // recalculate metrics only once
             PlotAxesX[0].MinLimit = 1;
+            m_ShouldRecalculateMetrics = true;
             PlotAxesX[0].MaxLimit = EndIndexMaximum;
         }
         async private Task LoadFileAsync()
@@ -191,11 +191,13 @@ namespace SignalDataPicker.viewmodel
         }
         private void RecalculateMetrics()
         {
+            if (!m_ShouldRecalculateMetrics) return;
+            
             IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) DataMetrics = null;
             else if (m_StartIndex >= m_EndIndex) DataMetrics = null;
             else if (m_StartIndex < 0 || m_EndIndex < 0) DataMetrics = null;
-
+            
             else
             {
                 m_FileData.FilteredData = SelectedAxis switch
@@ -269,6 +271,8 @@ namespace SignalDataPicker.viewmodel
 
         private ISeries[] m_PlotSeries;
         private ICartesianAxis[] m_PlotAxesX;
+
+        private bool m_ShouldRecalculateMetrics = true;
         #endregion
     }
 }

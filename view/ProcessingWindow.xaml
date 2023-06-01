@@ -23,7 +23,7 @@
         </Grid.ColumnDefinitions>
 
 
-        <lvc:CartesianChart Margin="4" Series="{Binding PlotSeries}" ZoomMode="Both"/>
+        <lvc:CartesianChart Margin="4" Series="{Binding PlotSeries}" ZoomMode="Both" XAxes="{Binding PlotAxesX}" YAxes="{Binding PlotAxesY}"/>
 
 
 
