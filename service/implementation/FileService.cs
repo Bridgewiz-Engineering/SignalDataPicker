@@ -86,14 +86,14 @@ namespace SignalDataPicker.service.implementation
 
             await Task.Run(() => data.Skip(29).ToList().ConvertAll(x =>
             {
-                var splitted = x.Split(',');
+                var splitted = x.Split(';');
                 return new Record
                 {
                     TimeStamp = splitted[0],
-                    Index = int.Parse(splitted[1]),
-                    X = double.Parse(splitted[2]),
-                    Y = double.Parse(splitted[3]),
-                    Z = double.Parse(splitted[4])
+                    Index = int.Parse(splitted[1],CultureInfo.InvariantCulture),
+                    X = double.Parse(splitted[2],CultureInfo.InvariantCulture),
+                    Y = double.Parse(splitted[3], CultureInfo.InvariantCulture),
+                    Z = double.Parse(splitted[4], CultureInfo.InvariantCulture)
                 };
             }
             ));

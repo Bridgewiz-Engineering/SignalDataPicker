@@ -64,6 +64,7 @@ namespace SignalDataPicker.viewmodel
             else
             {
                 EndIndex = m_FileData.AllData.Count;
+                StartIndex = 1;
                 StartIndexMaximum = m_FileData.AllData.Count;
                 EndIndexMaximum = m_FileData.AllData.Count;
                 UpdateData();
