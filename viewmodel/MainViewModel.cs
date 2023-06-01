@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
+using LiveChartsCore.Kernel.Sketches;
+using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SignalDataPicker.model;
@@ -8,6 +10,8 @@ using SignalDataPicker.service;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +25,7 @@ namespace SignalDataPicker.viewmodel
         public static List<OutputType> OutputTypes { get => Enum.GetValues(typeof(OutputType)).Cast<OutputType>().ToList(); }
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
         public IAsyncRelayCommand SaveFileCommand { get => m_SaveFileCommand; }
+        public IRelayCommand ResetBoundsCommand { get => m_ResetBoundsCommand; }
         public bool IsWorking { get => m_IsWorking; private set { SetProperty(ref m_IsWorking, value); UpdateCommandStates(); } }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
         public OutputType SelectedOutputType { get => m_SelectedOutputType; set => SetProperty(ref m_SelectedOutputType, value); }
@@ -32,6 +37,8 @@ namespace SignalDataPicker.viewmodel
         public int EndIndexMaximum { get => m_EndIndexMaximum; private set => SetProperty(ref m_EndIndexMaximum, value); }
         public ISeries[] PlotSeries { get => m_PlotSeries; private set => SetProperty(ref m_PlotSeries, value); }
         public DataMetrics? DataMetrics { get => m_DataMetrics; private set => SetProperty(ref m_DataMetrics, value); }
+
+        public ICartesianAxis[] PlotAxesX { get => m_PlotAxesX; private set => SetProperty(ref m_PlotAxesX, value); }
 
         #endregion
 
@@ -45,13 +52,54 @@ namespace SignalDataPicker.viewmodel
 
             m_LoadFileCommand = new AsyncRelayCommand(LoadFileAsync, LoadFileAsyncCanExecute);
             m_SaveFileCommand = new AsyncRelayCommand(SaveFileAsync, SaveFileAsyncCanExecute);
+            m_ResetBoundsCommand = new RelayCommand(ResetBounds, ResetBoundsCanExecute);
 
             m_AsyncRelayCommands = new IAsyncRelayCommand[] { m_LoadFileCommand, m_SaveFileCommand };
             m_RelayCommands = Array.Empty<IRelayCommand>();
+
+            var axis = new Axis();
+            axis.PropertyChanged += Axis_PropertyChanged;
+
+            m_PlotAxesX = new Axis[] { axis };
+
+        }
+
+        private void Axis_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(Axis.MinLimit))
+            {
+                if (sender is Axis axis)
+                {
+                    var axisMin = axis.MinLimit;
+                    if (axisMin <= 0) StartIndex = 1;
+                    else if (axisMin > StartIndexMaximum) StartIndex = StartIndexMaximum;
+                    else StartIndex = Convert.ToInt32(axisMin);
+                }
+
+            }
+            else if (e.PropertyName == nameof(Axis.MaxLimit))
+            {
+                if (sender is Axis axis)
+                {
+                    var axisMax = axis.MaxLimit;
+                    if (axisMax <= 0) EndIndex = EndIndexMaximum;
+                    else if (axisMax > EndIndexMaximum) EndIndex = EndIndexMaximum;
+                    else EndIndex = Convert.ToInt32(axisMax);
+                }
+            }
+
         }
         #endregion
 
         #region Command Handlers
+
+        private void ResetBounds()
+        {
+            StartIndex = 1;
+            EndIndex = EndIndexMaximum;
+            PlotAxesX[0].MinLimit = 1;
+            PlotAxesX[0].MaxLimit = EndIndexMaximum;
+        }
         async private Task LoadFileAsync()
         {
             IsWorking = true;
@@ -63,10 +111,9 @@ namespace SignalDataPicker.viewmodel
             }
             else
             {
-                EndIndex = m_FileData.AllData.Count;
-                StartIndex = 1;
                 StartIndexMaximum = m_FileData.AllData.Count;
                 EndIndexMaximum = m_FileData.AllData.Count;
+                ResetBounds();
                 UpdateData();
             }
             IsWorking = false;
@@ -96,6 +143,11 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command States
+
+        private bool ResetBoundsCanExecute()
+        {
+            return !m_IsWorking && m_FileData != null;
+        }
         private bool LoadFileAsyncCanExecute()
         {
             return !m_IsWorking;
@@ -123,7 +175,7 @@ namespace SignalDataPicker.viewmodel
         {
             UpdateCommandStates();
             PlotActiveAxis();
-            _ = Task.Run(()=>RecalculateMetrics());
+            _ = Task.Run(() => RecalculateMetrics());
         }
         private void RecalculateMetrics()
         {
@@ -171,6 +223,8 @@ namespace SignalDataPicker.viewmodel
                     TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Context.Entity.EntityIndex}"
                 }
             };
+
+
             IsWorking = false;
         }
         #endregion
@@ -180,9 +234,9 @@ namespace SignalDataPicker.viewmodel
         private readonly IFileService m_FileService;
         private readonly IWindowService m_WindowService;
 
-
         private readonly IAsyncRelayCommand m_LoadFileCommand;
         private readonly IAsyncRelayCommand m_SaveFileCommand;
+        private readonly IRelayCommand m_ResetBoundsCommand;
 
         private bool m_IsWorking = false;
         private FileData? m_FileData = null;
@@ -201,6 +255,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IRelayCommand[] m_RelayCommands;
 
         private ISeries[] m_PlotSeries;
+        private ICartesianAxis[] m_PlotAxesX;
         #endregion
     }
 }
