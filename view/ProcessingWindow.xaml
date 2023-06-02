@@ -11,7 +11,7 @@
                  d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="SİNYAL ANALİZ SONUÇLARI" Height="720" Width="1200">
+        Title="SİNYAL ANALİZİ" Height="720" Width="1200">
     <mah:MetroWindow.Resources>
         <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converter:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
@@ -40,7 +40,7 @@
             <TextBlock Text="{Binding FFTDCCutoff}" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="Filtre Tipi" Margin="4" HorizontalAlignment="Center" />
             <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" />
-            <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" />
             <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
             <StackPanel Orientation="Vertical" Visibility="{Binding Filter, Converter={StaticResource NullToVisibilityConverter}}">
                 <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
