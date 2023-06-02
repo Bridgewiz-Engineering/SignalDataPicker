@@ -15,9 +15,9 @@ namespace SignalDataPicker.factory
             };
         }
 
-        public IFilter CreateFilter(FilterType filterType, FilterConfigurationType filterConfiguration)
+        public IFilter CreateFilter(FilterType filterType, FilterConfigurationType filterConfigurationType)
         {
-            return m_FilterCreators[filterType](filterConfiguration);
+            return m_FilterCreators[filterType](filterConfigurationType);
         }
         #region Fields
         private readonly Dictionary<FilterType, Func<FilterConfigurationType, IFilter>> m_FilterCreators;

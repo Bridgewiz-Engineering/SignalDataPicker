@@ -10,7 +10,7 @@
                  d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="SİNYAL ANALİZ SONUÇLARI" Height="400" Width="1200">
+        Title="SİNYAL ANALİZ SONUÇLARI" Height="720" Width="1200">
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="Loaded">
             <behaviors:InvokeCommandAction Command="{Binding ProcessCommand}"/>
@@ -29,9 +29,15 @@
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="Maksimum Frekans (Hz)" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding FFTMaxFrequency, StringFormat='F2'}" Margin="4" HorizontalAlignment="Center" />
-            <TextBlock Text="Frekans Alt Cutoff" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Analiz Ayarları" Margin="8,16,8,8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="DC Cutoff (Hz)" Margin="4" HorizontalAlignment="Center" />
             <Slider Minimum="0" Maximum="10" Value="{Binding FFTDCCutoff}" Margin="4" SmallChange="0.5" LargeChange="1" HorizontalAlignment="Center" Orientation="Horizontal" TickPlacement="BottomRight" Width="100" />
             <TextBlock Text="{Binding FFTDCCutoff}" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Filtre Tipi" Margin="4" HorizontalAlignment="Center" />
+            <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" />
+            <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" />
+            <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
+            <Button Content="Apply Filter" Command="{Binding ApplyFilterCommand}" Margin="4" />
             <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>

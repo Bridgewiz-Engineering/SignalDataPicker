@@ -6,11 +6,13 @@ using LiveChartsCore.Kernel.Sketches;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
+using SignalDataPicker.factory;
 using SignalDataPicker.model;
 using SignalDataPicker.service;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -20,6 +22,7 @@ namespace SignalDataPicker.viewmodel
     {
         public static List<CorrectionType> CorrectionTypes { get => Enum.GetValues(typeof(CorrectionType)).Cast<CorrectionType>().ToList(); }
         public static List<FilterType> FilterTypes { get => Enum.GetValues(typeof(FilterType)).Cast<FilterType>().ToList(); }
+        public static List<FilterConfigurationType> FilterConfigurationTypes { get => Enum.GetValues(typeof(FilterConfigurationType)).Cast<FilterConfigurationType>().ToList(); }
         public static List<DataWindowType> DataWindowTypes { get => Enum.GetValues(typeof(DataWindowType)).Cast<DataWindowType>().ToList(); }
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
@@ -28,9 +31,12 @@ namespace SignalDataPicker.viewmodel
         public ICartesianAxis[] FFTAxesX { get => m_FFTAxesX; private set => SetProperty(ref m_FFTAxesX, value); }
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
+        public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; } 
         public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
-
+        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); } }
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
+        public IFilter? Filter { get => m_Filter; private set => SetProperty(ref m_Filter, value); }
+        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); } }
 
         public ProcessingViewModel(IAnalysisService analysisService, IWindowService windowService)
         {
@@ -38,6 +44,13 @@ namespace SignalDataPicker.viewmodel
             m_WindowService = windowService;
 
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
+            m_ApplyFilterCommand = new AsyncRelayCommand(ApplyFilter, ApplyFilterCanExecute);
+            m_Commands = new[] { m_ProcessCommand, m_ApplyFilterCommand };
+            m_AsyncCommands = Array.Empty<IAsyncRelayCommand>();
+
+
+
+
             m_FFTSeries = Array.Empty<ISeries>();
 
             m_FFTAxesX = new Axis[] { new() { Name = "Hz" } };
@@ -64,7 +77,7 @@ namespace SignalDataPicker.viewmodel
         private async Task Process()
         {
             IsProcessing = true;
-            var data = await m_AnalysisService.Process(FileData!);
+            var data = await m_AnalysisService.Process(FileData!, new());
             if (data.IsSuccess)
             {
                 m_FFTPoints = data.FFTResult.ConvertAll(q => new ObservablePoint(q[0], q[1]));
@@ -108,9 +121,50 @@ namespace SignalDataPicker.viewmodel
             m_FFTAxesY[0].MaxLimit = null;
         }
 
+        #region Command States
         private bool ProcessCanExecute()
         {
             return !IsProcessing;
+        }
+        private bool ApplyFilterCanExecute()
+        {
+            return !IsProcessing && m_SelectedFilterType != FilterType.None;
+        }
+        private void UpdateCommandStates()
+        {
+            foreach (var command in m_Commands)
+                command.NotifyCanExecuteChanged();
+            foreach (var command in m_AsyncCommands)
+                command.NotifyCanExecuteChanged();
+        }
+        #endregion
+
+        private Task ApplyFilter()
+        {
+            switch (m_SelectedFilterType)
+            {
+                case FilterType.None:
+                    Filter = null;
+                    break;
+                case FilterType.Butterworth:
+                    Filter = m_FilterFactory.CreateFilter(m_SelectedFilterType, m_SelectedFilterConfigurationType);
+                    break;
+                case FilterType.Chebyshev:
+                    break;
+                case FilterType.Bessel:
+                    break;
+                case FilterType.Elliptic:
+                    break;
+                case FilterType.Legendre:
+                    break;
+                case FilterType.Gaussian:
+                    break;
+                default:
+                    break;
+            }
+
+            Debug.WriteLine($"Filter: {Filter}");
+            return Task.CompletedTask;
         }
 
 
@@ -125,10 +179,19 @@ namespace SignalDataPicker.viewmodel
         private readonly IAnalysisService m_AnalysisService;
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
+        private readonly IAsyncRelayCommand m_ApplyFilterCommand;
+        private readonly IRelayCommand[] m_Commands;
+        private readonly IAsyncRelayCommand[] m_AsyncCommands;
         private int m_FFTDCCutoff = 1;
         private double m_FFTMaxFrequency;
         private List<ObservablePoint>? m_FFTPoints;
-        private FilterType[] m_SelectedFilterTypes
+        
+
+        private IFilter? m_Filter;
+        private FilterType m_SelectedFilterType = FilterType.None;
+        private FilterConfigurationType m_SelectedFilterConfigurationType = FilterConfigurationType.LowPass;
+        private FilterFactory m_FilterFactory = new();
+
         #endregion
     }
 }
