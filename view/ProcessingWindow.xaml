@@ -13,7 +13,8 @@
         WindowStartupLocation="CenterScreen"
         Title="SİNYAL ANALİZ SONUÇLARI" Height="720" Width="1200">
     <mah:MetroWindow.Resources>
-        <converter:FilterParameterTextConverter x:Key="FilterParameterTextConverter" />
+        <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converter:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
     </mah:MetroWindow.Resources>
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="Loaded">
@@ -40,25 +41,30 @@
             <TextBlock Text="Filtre Tipi" Margin="4" HorizontalAlignment="Center" />
             <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" />
             <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" />
-            <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
-            <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
-
-            <ItemsControl ItemsSource="{Binding Filter.FilterParameters}" Margin="4" HorizontalAlignment="Center">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Orientation="Vertical">
-                            <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name}" />
-                            <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="120" StringFormat="{}" InterceptManualEnter="False" StringFormat="\"{0:N2}\" Hz" />
-                        </StackPanel>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-
-
+            <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
+            <StackPanel Orientation="Vertical" Visibility="{Binding Filter, Converter={StaticResource NullToVisibilityConverter}}">
+                <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
+                <ItemsControl ItemsSource="{Binding Filter.FilterParameters}" Margin="4" HorizontalAlignment="Center">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name}" />
+                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
 
 
-            <Button Content="Apply Filter" Command="{Binding ApplyFilterCommand}" Margin="4" />
-                <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
+
+                <UniformGrid Columns="2">
+                    <Button Content ="See Filter" Margin="4" />
+                    <Button Content="Apply Filter" Margin="4" Command="{Binding ApplyFilterCommand}" />
+                </UniformGrid>
+            </StackPanel>
+            
+            
+            <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>
 </mah:MetroWindow>
