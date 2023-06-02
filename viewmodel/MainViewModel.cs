@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using LiveChartsCore;
 using LiveChartsCore.Kernel.Sketches;
-using LiveChartsCore.Measure;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using SignalDataPicker.model;
@@ -11,7 +10,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -26,6 +24,7 @@ namespace SignalDataPicker.viewmodel
         public IAsyncRelayCommand LoadFileCommand { get => m_LoadFileCommand; }
         public IAsyncRelayCommand SaveFileCommand { get => m_SaveFileCommand; }
         public IRelayCommand ResetBoundsCommand { get => m_ResetBoundsCommand; }
+        public IRelayCommand ShowProcessingWindowCommand { get => m_ShowProcessingWindowCommand; }
         public bool IsWorking { get => m_IsWorking; private set { SetProperty(ref m_IsWorking, value); UpdateCommandStates(); } }
         public FileType SelectedFileType { get => m_SelectedFileType; set => SetProperty(ref m_SelectedFileType, value); }
         public OutputType SelectedOutputType { get => m_SelectedOutputType; set => SetProperty(ref m_SelectedOutputType, value); }
@@ -53,9 +52,10 @@ namespace SignalDataPicker.viewmodel
             m_LoadFileCommand = new AsyncRelayCommand(LoadFileAsync, LoadFileAsyncCanExecute);
             m_SaveFileCommand = new AsyncRelayCommand(SaveFileAsync, SaveFileAsyncCanExecute);
             m_ResetBoundsCommand = new RelayCommand(ResetBounds, ResetBoundsCanExecute);
+            m_ShowProcessingWindowCommand = new RelayCommand(ShowProcessingWindow, ShowProcessingWindowCanExecute);
 
             m_AsyncRelayCommands = new IAsyncRelayCommand[] { m_LoadFileCommand, m_SaveFileCommand };
-            m_RelayCommands = Array.Empty<IRelayCommand>();
+            m_RelayCommands = new IRelayCommand[] { m_ResetBoundsCommand, m_ShowProcessingWindowCommand };
 
             var axis = new Axis();
             axis.PropertyChanged += Axis_PropertyChanged;
@@ -93,11 +93,16 @@ namespace SignalDataPicker.viewmodel
 
         #region Command Handlers
 
+        private void ShowProcessingWindow()
+        {
+            m_WindowService.ShowProcessingWindow(m_FileData!);
+        }
+
         private void ResetBounds()
         {
-            StartIndex = 1;
-            EndIndex = EndIndexMaximum;
+            m_ShouldRecalculateMetrics = false; // recalculate metrics only once
             PlotAxesX[0].MinLimit = 1;
+            m_ShouldRecalculateMetrics = true;
             PlotAxesX[0].MaxLimit = EndIndexMaximum;
         }
         async private Task LoadFileAsync()
@@ -115,6 +120,9 @@ namespace SignalDataPicker.viewmodel
                 EndIndexMaximum = m_FileData.AllData.Count;
                 ResetBounds();
                 UpdateData();
+                
+                if(m_WindowService.IsProcessingWindowOpen())            
+                    m_WindowService.ShowProcessingWindow(FileData!);
             }
             IsWorking = false;
         }
@@ -143,6 +151,11 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command States
+
+        private bool ShowProcessingWindowCanExecute()
+        {
+            return !m_IsWorking && m_FileData != null && m_FileData.FilteredData.Count > 2;
+        }
 
         private bool ResetBoundsCanExecute()
         {
@@ -179,6 +192,8 @@ namespace SignalDataPicker.viewmodel
         }
         private void RecalculateMetrics()
         {
+            if (!m_ShouldRecalculateMetrics) return;
+
             IsWorking = true;
             if (m_FileData == null || m_FileData.AllData.Count == 0) DataMetrics = null;
             else if (m_StartIndex >= m_EndIndex) DataMetrics = null;
@@ -237,6 +252,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IAsyncRelayCommand m_LoadFileCommand;
         private readonly IAsyncRelayCommand m_SaveFileCommand;
         private readonly IRelayCommand m_ResetBoundsCommand;
+        private readonly IRelayCommand m_ShowProcessingWindowCommand;
 
         private bool m_IsWorking = false;
         private FileData? m_FileData = null;
@@ -256,6 +272,8 @@ namespace SignalDataPicker.viewmodel
 
         private ISeries[] m_PlotSeries;
         private ICartesianAxis[] m_PlotAxesX;
+
+        private bool m_ShouldRecalculateMetrics = true;
         #endregion
     }
 }
