@@ -8,6 +8,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.VisualElements;
 using SignalDataPicker.factory;
 using SignalDataPicker.model;
+using SignalDataPicker.model.Filters;
 using SignalDataPicker.service;
 using SkiaSharp;
 using System;
@@ -37,7 +38,7 @@ namespace SignalDataPicker.viewmodel
         public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
         public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); InitializeFilter(); } }
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
-        public IFilter? Filter { get => m_Filter; private set { SetProperty(ref m_Filter, value); UpdateCommandStates(); } }
+        public FilterBase? Filter { get => m_Filter; private set { SetProperty(ref m_Filter, value); UpdateCommandStates(); } }
         public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); InitializeFilter(); } }
         #endregion
 
@@ -87,10 +88,10 @@ namespace SignalDataPicker.viewmodel
 
         private async Task ShowFilterPreviewWindow()
         {
-            var filterData = await m_Filter!.CreateFilterData(FileData!.SamplingFrequency);
-            if (filterData != null)
+            await m_Filter!.InitializeData();
+            if (m_Filter.IsFilterDataInitialized)
             {
-                m_WindowService.ShowFilterPreviewWindow(filterData);
+                m_WindowService.ShowFilterPreviewWindow(m_Filter);
             }
         }
 
@@ -167,29 +168,7 @@ namespace SignalDataPicker.viewmodel
         }
         private void InitializeFilter()
         {
-            switch (m_SelectedFilterType)
-            {
-                case FilterType.None:
-                    Filter = null;
-                    break;
-                case FilterType.Butterworth:
-                    Filter = m_FilterFactory.CreateFilter(m_SelectedFilterType, m_SelectedFilterConfigurationType);
-                    break;
-                case FilterType.Chebyshev:
-                    break;
-                case FilterType.Bessel:
-                    break;
-                case FilterType.Elliptic:
-                    break;
-                case FilterType.Legendre:
-                    break;
-                case FilterType.Gaussian:
-                    break;
-                default:
-                    break;
-            }
-
-
+            Filter = m_FilterFactory.Create(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
         }
         #endregion
 
@@ -213,10 +192,10 @@ namespace SignalDataPicker.viewmodel
         private List<ObservablePoint>? m_FFTPoints;
 
 
-        private IFilter? m_Filter;
+        private FilterBase? m_Filter;
         private FilterType m_SelectedFilterType = FilterType.None;
         private FilterConfigurationType m_SelectedFilterConfigurationType = FilterConfigurationType.LowPass;
-        private FilterFactory m_FilterFactory = new();
+        private readonly FilterFactory m_FilterFactory = new();
 
         #endregion
     }

@@ -2,6 +2,7 @@
 using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
+using SignalDataPicker.model.Filters;
 using SkiaSharp;
 using System.Collections.Generic;
 
@@ -12,11 +13,11 @@ namespace SignalDataPicker.view
     /// </summary>
     public partial class FilterPreviewWindow
     {
-        public FilterPreviewWindow(double[,] filterData)
+        internal FilterPreviewWindow(FilterBase filter)
         {
             InitializeComponent();
 
-            SetFilterData(filterData);
+            SetFilterData(filter.FilterData);
             lvcFilter.XAxes = m_XAxes;
             lvcFilter.Series = m_Series;
         }

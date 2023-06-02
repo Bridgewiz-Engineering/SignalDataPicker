@@ -7,20 +7,19 @@ namespace SignalDataPicker.factory
 {
     internal class FilterFactory
     {
-        public FilterFactory()
+        public FilterBase Create(FilterType filterType, FilterConfigurationType filterConfigurationType, int samplingFrequency)
         {
-            m_FilterCreators = new Dictionary<FilterType, Func<FilterConfigurationType, IFilter>>
-            {
-                { FilterType.Butterworth, (filterConfigurationType) => new Butterworth(filterConfigurationType) }
-            };
+            return m_FilterCreators[filterType](filterConfigurationType, samplingFrequency);
         }
-
-        public IFilter CreateFilter(FilterType filterType, FilterConfigurationType filterConfigurationType)
+        private readonly Dictionary<FilterType, Func<FilterConfigurationType, int, FilterBase>> m_FilterCreators = new()
         {
-            return m_FilterCreators[filterType](filterConfigurationType);
-        }
-        #region Fields
-        private readonly Dictionary<FilterType, Func<FilterConfigurationType, IFilter>> m_FilterCreators;
-        #endregion
+            { FilterType.Elliptic, (filterConfigurationType, samplingFrequency) => new Elliptic(filterConfigurationType, samplingFrequency) },
+            { FilterType.Legendre, (filterConfigurationType, samplingFrequency) => new Legendre(filterConfigurationType, samplingFrequency) },
+            { FilterType.Gaussian, (filterConfigurationType, samplingFrequency) => new Gaussian(filterConfigurationType, samplingFrequency) },
+            { FilterType.Butterworth, (filterConfigurationType, samplingFrequency) => new Butterworth(filterConfigurationType, samplingFrequency) },
+            { FilterType.Chebyshev, (filterConfigurationType, samplingFrequency) => new Chebyshev(filterConfigurationType, samplingFrequency) },
+            { FilterType.Bessel, (filterConfigurationType, samplingFrequency) => new Bessel(filterConfigurationType, samplingFrequency) }
+        };
     }
 }
+

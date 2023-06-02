@@ -1,4 +1,5 @@
 ﻿using SignalDataPicker.model;
+using SignalDataPicker.model.Filters;
 
 namespace SignalDataPicker.service
 {
@@ -6,7 +7,7 @@ namespace SignalDataPicker.service
     {
         void ShowErrorDialog(string message);
         void ShowProcessingWindow(FileData fileData);
-        void ShowFilterPreviewWindow(double[,] filterData);
+        void ShowFilterPreviewWindow(FilterBase filter);
         void CloseFilterPreviewWindow();
         void CloseProcessingWindow();
         bool IsFilterPreviewWindowOpen();

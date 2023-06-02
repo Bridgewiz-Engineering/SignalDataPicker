@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.model.Filters
 {
-    internal class Butterworth : FilterBase
+    internal class Gaussian : FilterBase
     {
-        public Butterworth(FilterConfigurationType filterConfigurationType, int samplingFrequency) : base(filterConfigurationType, samplingFrequency)
-        {
-            FilterType = FilterType.Butterworth;
+        public Gaussian(FilterConfigurationType filterConfigurationType, int samplingFrequency) : base(filterConfigurationType, samplingFrequency)
+        { 
+            FilterType = FilterType.Gaussian;
         }
 
         public override async Task InitializeData()
@@ -16,13 +19,11 @@ namespace SignalDataPicker.model.Filters
             {
                 FilterData = new double[SamplingFrequency, 2];
                 var cutoff = FilterParameters[0].Value;
-                //TODO : implement Butterworth filter
                 var random = new Random();
                 for (var i = 0; i < SamplingFrequency; i++)
                 {
                     FilterData[i, 0] = i;
-                    // for now create a sine wave with noise
-                    FilterData[i, 1] = Math.Sin(i * 2 * Math.PI * 10 / SamplingFrequency) + random.NextDouble() * 0.1;
+                    FilterData[i, 1] = Math.Exp(-Math.Pow(i, 2) / (2 * Math.Pow(cutoff, 2)));
                 }
             });
         }

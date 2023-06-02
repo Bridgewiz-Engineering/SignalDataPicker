@@ -1,4 +1,5 @@
 ﻿using SignalDataPicker.model;
+using SignalDataPicker.model.Filters;
 using SignalDataPicker.view;
 using System.Windows;
 
@@ -30,11 +31,18 @@ namespace SignalDataPicker.service.implementation
             return m_ProcessingWindow != null;
         }
 
-        public void ShowFilterPreviewWindow(double[,] filterData)
+        public void ShowFilterPreviewWindow(FilterBase filter)
         {
-            m_FilterPreviewWindow = new FilterPreviewWindow(filterData);
-            m_FilterPreviewWindow.Closed += (sender, e) => m_FilterPreviewWindow = null;
-            m_FilterPreviewWindow.Show();
+            if (m_FilterPreviewWindow != null)
+            {
+                m_FilterPreviewWindow.SetFilterData(filter.FilterData);
+            }
+            else
+            {
+                m_FilterPreviewWindow = new FilterPreviewWindow(filter);
+                m_FilterPreviewWindow.Closed += (sender, e) => m_FilterPreviewWindow = null;
+                m_FilterPreviewWindow.Show();
+            }
         }
 
         public void CloseFilterPreviewWindow()
