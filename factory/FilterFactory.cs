@@ -11,7 +11,7 @@ namespace SignalDataPicker.factory
         {
             m_FilterCreators = new Dictionary<FilterType, Func<FilterConfigurationType, IFilter>>
             {
-                { FilterType.Butterworth, (filterConfiguration) => new Butterworth(filterConfiguration) }
+                { FilterType.Butterworth, (filterConfigurationType) => new Butterworth(filterConfigurationType) }
             };
         }
 

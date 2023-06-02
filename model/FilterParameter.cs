@@ -1,14 +1,20 @@
-﻿namespace SignalDataPicker.model
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+
+namespace SignalDataPicker.model
 {
-    internal record FilterParameter
+    internal class FilterParameter : ObservableObject
     {
         public string Name { get; set; } = string.Empty;
-        public double Value { get; set; }
+        public double Value { get => m_Value; set => SetProperty(ref m_Value, value); }
 
         public FilterParameter(string name, double value)
         {
             Name = name;
-            Value = value;
+            m_Value = value;
         }
+
+        #region Fields
+        private double m_Value;
+        #endregion
     }
 }

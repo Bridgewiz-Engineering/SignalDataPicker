@@ -5,12 +5,16 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:converter="clr-namespace:SignalDataPicker.converter"
                  xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
                  xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel"
                  d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
         Title="SİNYAL ANALİZ SONUÇLARI" Height="720" Width="1200">
+    <mah:MetroWindow.Resources>
+        <converter:FilterParameterTextConverter x:Key="FilterParameterTextConverter" />
+    </mah:MetroWindow.Resources>
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="Loaded">
             <behaviors:InvokeCommandAction Command="{Binding ProcessCommand}"/>
@@ -37,8 +41,24 @@
             <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" />
             <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" />
             <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
+            <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
+
+            <ItemsControl ItemsSource="{Binding Filter.FilterParameters}" Margin="4" HorizontalAlignment="Center">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name}" />
+                            <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="0" Maximum="100" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="120" StringFormat="{}" InterceptManualEnter="False" StringFormat="\"{0:N2}\" Hz" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+
+
+
             <Button Content="Apply Filter" Command="{Binding ApplyFilterCommand}" Margin="4" />
-            <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
+                <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>
 </mah:MetroWindow>

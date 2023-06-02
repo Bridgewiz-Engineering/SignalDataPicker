@@ -6,7 +6,7 @@ namespace SignalDataPicker.model
     internal interface IFilter
     {
         FilterType FilterType { get; }
-        FilterConfigurationType FilterConfiguration { get; }
+        FilterConfigurationType FilterConfigurationType { get; }
         List<FilterParameter> FilterParameters { get; }
         Task<double[,]> CreateFilterData();
     }

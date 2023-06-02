@@ -33,10 +33,10 @@ namespace SignalDataPicker.viewmodel
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
         public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; } 
         public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
-        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); } }
+        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); InitializeFilter();  } }
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
         public IFilter? Filter { get => m_Filter; private set => SetProperty(ref m_Filter, value); }
-        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); } }
+        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); InitializeFilter(); } }
 
         public ProcessingViewModel(IAnalysisService analysisService, IWindowService windowService)
         {
@@ -139,7 +139,7 @@ namespace SignalDataPicker.viewmodel
         }
         #endregion
 
-        private Task ApplyFilter()
+        private void InitializeFilter()
         {
             switch (m_SelectedFilterType)
             {
@@ -163,6 +163,11 @@ namespace SignalDataPicker.viewmodel
                     break;
             }
 
+            
+        }
+
+        private Task ApplyFilter()
+        {
             Debug.WriteLine($"Filter: {Filter}");
             return Task.CompletedTask;
         }
