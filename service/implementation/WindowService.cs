@@ -25,6 +25,11 @@ namespace SignalDataPicker.service.implementation
             }
         }
 
+        public bool IsProcessingWindowOpen()
+        {
+            return m_ProcessingWindow != null;
+        }
+
         #region Fields
         private ProcessingWindow? m_ProcessingWindow;
         #endregion

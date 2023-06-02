@@ -7,5 +7,6 @@ namespace SignalDataPicker.service
         void ShowErrorDialog(string message);
 
         void ShowProcessingWindow(FileData fileData);
+        bool IsProcessingWindowOpen();
     }
 }

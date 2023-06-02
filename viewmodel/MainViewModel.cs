@@ -120,6 +120,9 @@ namespace SignalDataPicker.viewmodel
                 EndIndexMaximum = m_FileData.AllData.Count;
                 ResetBounds();
                 UpdateData();
+                
+                if(m_WindowService.IsProcessingWindowOpen())            
+                    m_WindowService.ShowProcessingWindow(FileData!);
             }
             IsWorking = false;
         }
