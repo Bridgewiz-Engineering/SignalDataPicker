@@ -18,6 +18,9 @@ namespace SignalDataPicker.viewmodel
 {
     internal class ProcessingViewModel : ObservableObject
     {
+        public static List<CorrectionType> CorrectionTypes { get => Enum.GetValues(typeof(CorrectionType)).Cast<CorrectionType>().ToList(); }
+        public static List<FilterType> FilterTypes { get => Enum.GetValues(typeof(FilterType)).Cast<FilterType>().ToList(); }
+        public static List<DataWindowType> DataWindowTypes { get => Enum.GetValues(typeof(DataWindowType)).Cast<DataWindowType>().ToList(); }
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
         public double FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
@@ -125,6 +128,7 @@ namespace SignalDataPicker.viewmodel
         private int m_FFTDCCutoff = 1;
         private double m_FFTMaxFrequency;
         private List<ObservablePoint>? m_FFTPoints;
+        private FilterType[] m_SelectedFilterTypes
         #endregion
     }
 }

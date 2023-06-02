@@ -31,7 +31,7 @@ namespace SignalDataPicker.service.implementation
             });
         }
 
-        public async Task<ProcessingResult> Process(FileData fileData)
+        public async Task<ProcessingResult> Process(FileData fileData, ProcessingOptions processingOptions)
         {
             var result = new ProcessingResult();
             try
