@@ -58,7 +58,7 @@
 
 
                 <UniformGrid Columns="2">
-                    <Button Content ="See Filter" Margin="4" />
+                    <Button Content ="See Filter" Margin="4" Command="{Binding ShowFilterPreviewWindowCommand}" />
                     <Button Content="Apply Filter" Margin="4" Command="{Binding ApplyFilterCommand}" />
                 </UniformGrid>
             </StackPanel>

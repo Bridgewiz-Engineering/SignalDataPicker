@@ -32,6 +32,7 @@ namespace SignalDataPicker.viewmodel
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
         public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; } 
+        public IAsyncRelayCommand ShowFilterPreviewWindowCommand { get => m_ShowFilterPreviewWindowCommand; }
         public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
         public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); InitializeFilter();  } }
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
@@ -45,8 +46,9 @@ namespace SignalDataPicker.viewmodel
 
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
             m_ApplyFilterCommand = new AsyncRelayCommand(ApplyFilter, ApplyFilterCanExecute);
-            m_Commands = new[] { m_ProcessCommand, m_ApplyFilterCommand };
-            m_AsyncCommands = Array.Empty<IAsyncRelayCommand>();
+            m_ShowFilterPreviewWindowCommand = new AsyncRelayCommand(ShowFilterPreviewWindow, ShowFilterPreviewWindowCanExecute);
+            m_Commands = Array.Empty<IAsyncRelayCommand>();
+            m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand, m_ShowFilterPreviewWindowCommand };
 
 
 
@@ -56,6 +58,15 @@ namespace SignalDataPicker.viewmodel
             m_FFTAxesX = new Axis[] { new() { Name = "Hz" } };
             m_FFTAxesY = new Axis[] { new() };
 
+        }
+
+        private async Task ShowFilterPreviewWindow()
+        {
+            var filterData = await m_Filter!.CreateFilterData(FileData!.SamplingFrequency);
+            if (filterData != null)
+            {
+                m_WindowService.ShowFilterPreviewWindow(filterData);
+            }
         }
 
         public void SetFileData(FileData fileData)
@@ -130,6 +141,10 @@ namespace SignalDataPicker.viewmodel
         {
             return !IsProcessing && m_SelectedFilterType != FilterType.None;
         }
+        private bool ShowFilterPreviewWindowCanExecute()
+        {
+            return !IsProcessing && m_SelectedFilterType != FilterType.None && m_Filter != null;
+        }
         private void UpdateCommandStates()
         {
             foreach (var command in m_Commands)
@@ -185,6 +200,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
         private readonly IAsyncRelayCommand m_ApplyFilterCommand;
+        private readonly IAsyncRelayCommand m_ShowFilterPreviewWindowCommand;
         private readonly IRelayCommand[] m_Commands;
         private readonly IAsyncRelayCommand[] m_AsyncCommands;
         private int m_FFTDCCutoff = 1;

@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -33,9 +32,24 @@ namespace SignalDataPicker.model.Filters
 
         public List<FilterParameter> FilterParameters { get => m_FilterParameters; }
 
-        public Task<double[,]> CreateFilterData()
+        public async Task<double[,]> CreateFilterData(int samplingFrequency)
         {
-            throw new NotImplementedException();
+            // TODO Cache filter data for performance
+            return await Task.Run(() =>
+            {
+                var filterData = new double[samplingFrequency, 2];
+                //  TODO Implement filter data creation - check
+                //  https://filtering.mathdotnet.com/api/MathNet.Filtering.Butterworth/Designer.htm
+                //  https://github.com/ar1st0crat/NWaves#filters-and-effects
+                // for now return random data
+                var random = new Random();
+                for (var i = 0; i < samplingFrequency; i++)
+                {
+                    filterData[i, 0] = random.NextDouble();
+                    filterData[i, 1] = random.NextDouble();
+                }
+                return filterData;
+            });
         }
 
 

@@ -30,8 +30,31 @@ namespace SignalDataPicker.service.implementation
             return m_ProcessingWindow != null;
         }
 
+        public void ShowFilterPreviewWindow(double[,] filterData)
+        {
+            m_FilterPreviewWindow = new FilterPreviewWindow(filterData);
+            m_FilterPreviewWindow.Closed += (sender, e) => m_FilterPreviewWindow = null;
+            m_FilterPreviewWindow.Show();
+        }
+
+        public void CloseFilterPreviewWindow()
+        {
+            m_FilterPreviewWindow?.Close();
+        }
+
+        public void CloseProcessingWindow()
+        {
+            m_ProcessingWindow?.Close();
+        }
+
+        public bool IsFilterPreviewWindowOpen()
+        {
+            return m_FilterPreviewWindow != null;
+        }
+
         #region Fields
         private ProcessingWindow? m_ProcessingWindow;
+        private FilterPreviewWindow? m_FilterPreviewWindow;
         #endregion
     }
 }

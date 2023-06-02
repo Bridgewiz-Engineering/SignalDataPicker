@@ -8,6 +8,6 @@ namespace SignalDataPicker.model
         FilterType FilterType { get; }
         FilterConfigurationType FilterConfigurationType { get; }
         List<FilterParameter> FilterParameters { get; }
-        Task<double[,]> CreateFilterData();
+        Task<double[,]> CreateFilterData(int samplingFrequency);
     }
 }
