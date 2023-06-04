@@ -10,21 +10,24 @@ namespace SignalDataPicker.model.Filters
             FilterType = FilterType.Bessel;
         }
 
-        public override async Task InitializeData()
+        protected override Task<double[,]> InitializeBandPass()
         {
-            await Task.Run(() =>
-            {
-                FilterData = new double[SamplingFrequency, 2];
-                var cutoff = FilterParameters[0].Value;
-                //TODO : implement Bessel filter
-                var random = new Random();
-                for (var i = 0; i < SamplingFrequency; i++)
-                {
-                    FilterData[i, 0] = i;
-                    // for now create a sinh wave with noise
-                    FilterData[i, 1] = Math.Sinh(i * 2 * Math.PI * 10 / SamplingFrequency) + random.NextDouble() * 0.1;
-                }
-            });
+            throw new NotImplementedException();
+        }
+
+        protected override Task<double[,]> InitializeBandStop()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task<double[,]> InitializeHighPass()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task<double[,]> InitializeLowPass()
+        {
+            throw new NotImplementedException();
         }
     }
 }

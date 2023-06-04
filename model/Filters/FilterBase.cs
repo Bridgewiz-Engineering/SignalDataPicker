@@ -7,7 +7,10 @@ namespace SignalDataPicker.model.Filters
     internal abstract class FilterBase
     {
         #region Abstract Methods
-        public abstract Task InitializeData();
+        protected abstract Task<double[,]> InitializeLowPass();
+        protected abstract Task<double[,]> InitializeHighPass();
+        protected abstract Task<double[,]> InitializeBandPass();
+        protected abstract Task<double[,]> InitializeBandStop();
         #endregion
 
         #region Constructors
@@ -29,6 +32,26 @@ namespace SignalDataPicker.model.Filters
         #endregion
 
         #region Virtual Methods
+        public virtual async Task InitializeData()
+        {
+            switch (FilterConfigurationType)
+            {
+                case FilterConfigurationType.LowPass:
+                    FilterData = await InitializeLowPass();
+                    break;
+                case FilterConfigurationType.HighPass:
+                    FilterData = await InitializeHighPass();
+                    break;
+                case FilterConfigurationType.BandPass:
+                    FilterData = await InitializeBandPass();
+                    break;
+                case FilterConfigurationType.BandStop:
+                    FilterData = await InitializeBandStop();
+                    break;
+                default:
+                    throw new NotImplementedException();
+            }
+        }
         protected virtual void InitializeParameters()
         {
             switch (FilterConfigurationType)
