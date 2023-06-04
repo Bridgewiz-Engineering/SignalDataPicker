@@ -1,16 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using SignalDataPicker.model.Filters;
 
 namespace SignalDataPicker.model
 {
     internal class FilterParameter : ObservableObject
     {
-        public string Name { get; set; } = string.Empty;
+        public FilterParameterName Name { get; set; }
         public double Minimum { get; set; }
         public double Maximum { get; set; }
         public string Unit { get; set; }
         public double Value { get => m_Value; set => SetProperty(ref m_Value, value); }
 
-        public FilterParameter(string name, double value, double minimum, double maximum, string unit)
+        public FilterParameter(FilterParameterName name, double value, double minimum, double maximum, string unit)
         {
             Name = name;
             m_Value = value;

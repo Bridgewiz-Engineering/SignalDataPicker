@@ -1,4 +1,7 @@
-﻿using System;
+﻿using MathNet.Filtering.Butterworth;
+using MathNet.Filtering.FIR;
+using NWaves.Filters.Butterworth;
+using System;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.model.Filters
@@ -10,21 +13,33 @@ namespace SignalDataPicker.model.Filters
             FilterType = FilterType.Butterworth;
         }
 
-        public override async Task InitializeData()
+        protected override Task InitializeBandPass()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task InitializeBandStop()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override Task InitializeHighPass()
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override async Task InitializeLowPass()
         {
             await Task.Run(() =>
             {
-                FilterData = new double[SamplingFrequency, 2];
-                var cutoff = FilterParameters[0].Value;
-                //TODO : implement Butterworth filter
-                var random = new Random();
-                for (var i = 0; i < SamplingFrequency; i++)
-                {
-                    FilterData[i, 0] = i;
-                    // for now create a sine wave with noise
-                    FilterData[i, 1] = Math.Sin(i * 2 * Math.PI * 10 / SamplingFrequency) + random.NextDouble() * 0.1;
-                }
+                var nyquist = SamplingFrequency / 2d;
+                var normalizedCutoff = FilterParameters[FilterParameterName.Cutoff].Value / nyquist;
+
+                Coefficients = IirCoefficients.LowPass(normalizedCutoff + TransitionBandwidth, normalizedCutoff - TransitionBandwidth, DefaultPassbandRipple, DefaultStopbandAttenuation);
+
             });
+
+
         }
     }
 }
