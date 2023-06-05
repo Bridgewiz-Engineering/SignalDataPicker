@@ -5,12 +5,18 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                  xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:converter="clr-namespace:SignalDataPicker.converter"
                  xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
                  xmlns:viewmodel="clr-namespace:SignalDataPicker.viewmodel"
                  d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="SİNYAL ANALİZ SONUÇLARI" Height="400" Width="1200">
+        Title="SİNYAL ANALİZİ" Height="720" Width="1280">
+    <mah:MetroWindow.Resources>
+        <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+        <converter:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
+        <converter:BooleanInverseConverter x:Key="BooleanInverseConverter" />
+    </mah:MetroWindow.Resources>
     <behaviors:Interaction.Triggers>
         <behaviors:EventTrigger EventName="Loaded">
             <behaviors:InvokeCommandAction Command="{Binding ProcessCommand}"/>
@@ -18,6 +24,7 @@
     </behaviors:Interaction.Triggers>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -25,13 +32,56 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <lvc:CartesianChart Grid.Row="0" Grid.Column="0" Margin="4" Title="{Binding FFTTitle}" Series="{Binding FFTSeries}" ZoomMode="Both" XAxes="{Binding FFTAxesX}" YAxes="{Binding FFTAxesY}"/>
-        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+
+        <lvc:CartesianChart Grid.Row="1" Grid.Column="0" Margin="4" Title="{Binding FilterTitle}" Series="{Binding FilterSeries}" ZoomMode="None" XAxes="{Binding FilterAxesX}" YAxes="{Binding FilterAxesY}"/>
+
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" Margin="0,0,8,0">
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="Maksimum Frekans (Hz)" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding FFTMaxFrequency, StringFormat='F2'}" Margin="4" HorizontalAlignment="Center" />
-            <TextBlock Text="Frekans Alt Cutoff" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Analiz Ayarları" Margin="8,16,8,8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
+            <TextBlock Text="DC Cutoff (Hz)" Margin="4" HorizontalAlignment="Center" />
             <Slider Minimum="0" Maximum="10" Value="{Binding FFTDCCutoff}" Margin="4" SmallChange="0.5" LargeChange="1" HorizontalAlignment="Center" Orientation="Horizontal" TickPlacement="BottomRight" Width="100" />
             <TextBlock Text="{Binding FFTDCCutoff}" Margin="4" HorizontalAlignment="Center" />
+            <TextBlock Text="Filtre Tipi" Margin="4" HorizontalAlignment="Center" />
+
+            <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" IsEnabled="{Binding IsProcessing, Converter={StaticResource BooleanInverseConverter}}">
+                <behaviors:Interaction.Triggers>
+                    <behaviors:EventTrigger EventName="SelectionChanged">
+                        <behaviors:InvokeCommandAction Command="{Binding UpdateFilterCommand}" />
+                    </behaviors:EventTrigger>
+                </behaviors:Interaction.Triggers>
+            </ComboBox>
+
+            <StackPanel Orientation="Vertical" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}">
+                <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" />
+                <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" IsEnabled="{Binding IsProcessing, Converter={StaticResource BooleanInverseConverter}}">
+                    <behaviors:Interaction.Triggers>
+                        <behaviors:EventTrigger EventName="SelectionChanged">
+                            <behaviors:InvokeCommandAction Command="{Binding UpdateFilterCommand}" />
+                        </behaviors:EventTrigger>
+                    </behaviors:Interaction.Triggers>
+                </ComboBox>
+                <Button Content="Apply Filter" Margin="4" Command="{Binding ApplyFilterCommand}" />
+                <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
+                <ItemsControl ItemsSource="{Binding Filter.FilterParameters.Values}" Margin="4" HorizontalAlignment="Center">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Vertical">
+                                <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name, Mode=OneTime}" />
+                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False">
+                                    <behaviors:Interaction.Triggers>
+                                        <behaviors:EventTrigger EventName="ValueChanged">
+                                            <behaviors:InvokeCommandAction Command="{Binding DataContext.UpdateFilterCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}" />
+                                        </behaviors:EventTrigger>
+                                    </behaviors:Interaction.Triggers>
+                                </mah:NumericUpDown>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+            
             <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>

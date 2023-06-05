@@ -6,6 +6,6 @@ namespace SignalDataPicker.service
     internal interface IAnalysisService
     {
         Task<DataMetrics> CalculateDataMetrics(FileData fileData, DataAxis axis);
-        Task<ProcessingResult> Process(FileData fileData);
+        Task<ProcessingResult> Process(FileData fileData, ProcessingOptions processingOptions);
     }
 }

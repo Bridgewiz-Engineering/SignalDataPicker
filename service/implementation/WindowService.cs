@@ -20,9 +20,7 @@ namespace SignalDataPicker.service.implementation
                 m_ProcessingWindow.Show();
             }
             else
-            {
                 m_ProcessingWindow.UpdateFileData(fileData);
-            }
         }
 
         public bool IsProcessingWindowOpen()
@@ -30,8 +28,27 @@ namespace SignalDataPicker.service.implementation
             return m_ProcessingWindow != null;
         }
 
+        public void CloseProcessingWindow()
+        {
+            m_ProcessingWindow?.Close();
+        }
+
+        public void ToggleFilterPreview()
+        {
+            if (m_ProcessingWindow == null) return;
+
+            if (m_ProcessingWindow.Width == m_ProcessingWindowWidthWithPreview)
+                m_ProcessingWindow.Width = m_ProcessingWindowWidthNoPreview;
+            else
+                m_ProcessingWindow.Width = m_ProcessingWindowWidthWithPreview;
+        }
+
+        public bool IsFilterPreviewVisible() => m_ProcessingWindow?.Width == m_ProcessingWindowWidthWithPreview;
+
         #region Fields
         private ProcessingWindow? m_ProcessingWindow;
+        private const int m_ProcessingWindowWidthNoPreview = 400;
+        private const int m_ProcessingWindowWidthWithPreview = 800;
         #endregion
     }
 }
