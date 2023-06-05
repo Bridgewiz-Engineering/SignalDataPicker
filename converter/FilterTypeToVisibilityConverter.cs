@@ -8,7 +8,7 @@ namespace SignalDataPicker.converter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return ((model.FilterType)value == model.FilterType.None) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
+            return ((model.FilterType)value == model.FilterType.NoFilter) ? System.Windows.Visibility.Collapsed : System.Windows.Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

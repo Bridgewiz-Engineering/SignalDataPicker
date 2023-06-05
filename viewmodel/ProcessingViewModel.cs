@@ -15,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.viewmodel
@@ -22,25 +23,43 @@ namespace SignalDataPicker.viewmodel
     internal class ProcessingViewModel : ObservableObject
     {
         #region Properties
+
+        // Combobox ItemsSource properties
         public static List<CorrectionType> CorrectionTypes { get => Enum.GetValues(typeof(CorrectionType)).Cast<CorrectionType>().ToList(); }
         public static List<FilterType> FilterTypes { get => Enum.GetValues(typeof(FilterType)).Cast<FilterType>().ToList(); }
-        public static List<FilterConfigurationType> FilterConfigurationTypes { get => Enum.GetValues(typeof(FilterConfigurationType)).Cast<FilterConfigurationType>().ToList(); }
         public static List<DataWindowType> DataWindowTypes { get => Enum.GetValues(typeof(DataWindowType)).Cast<DataWindowType>().ToList(); }
+        public static List<FilterConfigurationType> FilterConfigurationTypes { get => Enum.GetValues(typeof(FilterConfigurationType)).Cast<FilterConfigurationType>().ToList(); }
+
+        // Commands
+        public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
+        public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; }
+
+        // Command Processing
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
         public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
+
+        // FFT Properties
         public double FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
         public ISeries[] FFTSeries { get => m_FFTSeries; private set => SetProperty(ref m_FFTSeries, value); }
         public ICartesianAxis[] FFTAxesX { get => m_FFTAxesX; private set => SetProperty(ref m_FFTAxesX, value); }
         public ICartesianAxis[] FFTAxesY { get => m_FFTAxesY; private set => SetProperty(ref m_FFTAxesY, value); }
-        public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
-        public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; }
-        public IAsyncRelayCommand ShowFilterPreviewWindowCommand { get => m_ShowFilterPreviewWindowCommand; }
-        public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
-        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); InitializeFilter(); } }
         public LabelVisual FFTTitle { get; } = new() { Text = "FFT", TextSize = 25, Padding = new LiveChartsCore.Drawing.Padding(15), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
-        public FilterBase? Filter { get => m_Filter; private set { SetProperty(ref m_Filter, value); UpdateCommandStates(); } }
-        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); InitializeFilter(); } }
+        public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
+
+        // Filter Properties
+        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); } }
+        public FilterBase? Filter { get => m_Filter; private set { SetProperty(ref m_Filter, value); UpdateCommandStates(); UpdateFilterChart(); } }
+        public LabelVisual FilterTitle { get => m_FilterTitle; }
+        public ISeries[] FilterSeries { get => m_FilterSeries; private set => SetProperty(ref m_FilterSeries, value); }
+        public ICartesianAxis[] FilterAxesX { get => m_FilterAxesX; set => SetProperty(ref m_FilterAxesX, value); }
+        public ICartesianAxis[] FilterAxesY { get => m_FilterAxesY; set => SetProperty(ref m_FilterAxesY, value); }
+        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); } }
+
+
         #endregion
+
+
+
 
         #region Public methods
         public void SetFileData(FileData fileData)
@@ -68,9 +87,9 @@ namespace SignalDataPicker.viewmodel
 
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
             m_ApplyFilterCommand = new AsyncRelayCommand(ApplyFilter, ApplyFilterCanExecute);
-            m_ShowFilterPreviewWindowCommand = new AsyncRelayCommand(ShowFilterPreviewWindow, ShowFilterPreviewWindowCanExecute);
+
             m_Commands = Array.Empty<IAsyncRelayCommand>();
-            m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand, m_ShowFilterPreviewWindowCommand };
+            m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand };
 
             m_FFTSeries = Array.Empty<ISeries>();
 
@@ -86,13 +105,31 @@ namespace SignalDataPicker.viewmodel
             return Task.CompletedTask;
         }
 
-        private async Task ShowFilterPreviewWindow()
+        private void UpdateFilterChart()
         {
-            await m_Filter!.InitializeData();
-            if (m_Filter.IsFilterDataInitialized)
+            if (Filter?.FilterSampleData?.Length > 0)
             {
-                m_WindowService.ShowFilterPreviewWindow(m_Filter);
+                var chartPoints = new List<ObservablePoint>();
+                var chartData = Filter!.FilterSampleData!;
+                for (int i = 0; i < Filter!.FilterSampleData!.Length / Filter!.FilterSampleData!.Rank; i++)
+                    chartPoints.Add(new ObservablePoint(chartData[i, 0], chartData[i, 1]));
+
+                FilterSeries = new ISeries[]
+                {
+                    new LineSeries<ObservablePoint>
+                    {
+                        Fill = null,
+                        Stroke = new SolidColorPaint(SKColors.Red) { StrokeThickness = 1},
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        LineSmoothness = 0,
+                        Values = chartPoints,
+                        TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X}"
+                    }
+                };
+                ResetFilterAxies();
             }
+
         }
 
         private async Task Process()
@@ -115,7 +152,7 @@ namespace SignalDataPicker.viewmodel
                         TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X}"
                     }
                 };
-                ResetAxes();
+                ResetFFTAxes();
                 CutFFT();
             }
             else
@@ -123,6 +160,9 @@ namespace SignalDataPicker.viewmodel
                 FFTSeries = Array.Empty<ISeries>();
                 m_WindowService.ShowErrorDialog(data.ErrorMessage);
             }
+
+            InitializeFilter();
+
             IsProcessing = false;
         }
 
@@ -135,11 +175,7 @@ namespace SignalDataPicker.viewmodel
         }
         private bool ApplyFilterCanExecute()
         {
-            return !IsProcessing && m_SelectedFilterType != FilterType.None;
-        }
-        private bool ShowFilterPreviewWindowCanExecute()
-        {
-            return !IsProcessing && m_SelectedFilterType != FilterType.None && m_Filter != null;
+            return !IsProcessing && m_SelectedFilterType != FilterType.NoFilter;
         }
         private void UpdateCommandStates()
         {
@@ -159,16 +195,27 @@ namespace SignalDataPicker.viewmodel
             FFTMaxFrequency = cutData?.Find(q => q.Y == maxAmp)?.X ?? -1;
             FFTSeries[0].Values = cutData;
         }
-        private void ResetAxes()
+        private void ResetFFTAxes()
         {
             m_FFTAxesX[0].MinLimit = null;
             m_FFTAxesX[0].MaxLimit = null;
             m_FFTAxesY[0].MinLimit = null;
             m_FFTAxesY[0].MaxLimit = null;
         }
-        private void InitializeFilter()
+        private void ResetFilterAxies()
         {
-            Filter = m_FilterFactory.Create(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
+            m_FilterAxesX[0].MinLimit = null;
+            m_FilterAxesX[0].MaxLimit = null;
+            m_FilterAxesY[0].MinLimit = null;
+            m_FilterAxesY[0].MaxLimit = null;
+        }
+        private async Task InitializeFilter()
+        {
+            IsProcessing = true;
+            Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
+            Debug.WriteLine($"Filter: {Filter}");
+            UpdateFilterChart();
+            IsProcessing = false;
         }
         #endregion
 
@@ -184,7 +231,6 @@ namespace SignalDataPicker.viewmodel
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
         private readonly IAsyncRelayCommand m_ApplyFilterCommand;
-        private readonly IAsyncRelayCommand m_ShowFilterPreviewWindowCommand;
         private readonly IRelayCommand[] m_Commands;
         private readonly IAsyncRelayCommand[] m_AsyncCommands;
         private int m_FFTDCCutoff = 1;
@@ -193,9 +239,17 @@ namespace SignalDataPicker.viewmodel
 
 
         private FilterBase? m_Filter;
-        private FilterType m_SelectedFilterType = FilterType.None;
+        private FilterType m_SelectedFilterType = FilterType.NoFilter;
         private FilterConfigurationType m_SelectedFilterConfigurationType = FilterConfigurationType.LowPass;
+        private LabelVisual m_FilterTitle = new() { Text = "Filter (NoFilter)", TextSize = 15, Padding = new LiveChartsCore.Drawing.Padding(10), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
+        private ISeries[] m_FilterSeries = Array.Empty<ISeries>();
+        private ICartesianAxis[] m_FilterAxesX = new Axis[] { new() { Name = "Hz" } };
+        private ICartesianAxis[] m_FilterAxesY = new Axis[] { new() };
+
         private readonly FilterFactory m_FilterFactory = new();
+
+        private readonly SemaphoreSlim m_FilterSemaphore = new(1, 1);
+
 
         #endregion
     }

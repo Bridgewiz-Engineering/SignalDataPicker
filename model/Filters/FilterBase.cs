@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
-using MathNet.Filtering.FIR;
 
 namespace SignalDataPicker.model.Filters
 {
+    /// <summary>
+    /// The base class for all filters.
+    /// Use the factory class <see cref="FilterFactory"/> to create a filter.
+    /// </summary>
     internal abstract class FilterBase
     {
         #region Abstract Methods
@@ -27,22 +31,22 @@ namespace SignalDataPicker.model.Filters
         #endregion
 
         #region Constructors
-        public FilterBase(FilterConfigurationType filterConfigurationType, int samplingFrequency)
+        protected FilterBase(FilterConfigurationType filterConfigurationType, int samplingFrequency)
         {
             FilterConfigurationType = filterConfigurationType;
             SamplingFrequency = samplingFrequency;
-            InitializeParameters();
+            Initialize();
         }
         #endregion
 
         #region Properties
         public FilterType FilterType { get; protected set; }
         public FilterConfigurationType FilterConfigurationType { get; private set; }
-        public Dictionary<FilterParameterName, FilterParameter> FilterParameters { get; private set; } = new();
-        protected (double[] numerator, double[] denominator) Coefficients { get; set; } = (Array.Empty<double>(), Array.Empty<double>());
-        public double[,] FilterSampleData { get; protected set; } = new double[0, 0];
+        public Dictionary<FilterParameterName, FilterParameter> FilterParameters { get; } = new();
+        public double[,] FilterSampleData { get => m_FilterSampleData; private set => m_FilterSampleData = value; }
         public int SamplingFrequency { get; private set; }
-        public bool IsDataInitialized => FilterSampleData.Length > 0;
+        protected double[] FilterCoefficients { get; set; } = Array.Empty<double>();
+
 
         protected const int DefaultOrder = 1;
         protected const double DefaultCutoff = 1d;
@@ -55,18 +59,24 @@ namespace SignalDataPicker.model.Filters
         #endregion
 
         #region Virtual Methods
-        public virtual async Task InitializeData()
+        /// <summary>
+        /// This method should be called after the filter has been initialized.
+        /// </summary>
+        private void Initialize()
         {
+            InitializeParameters();
+
             switch (FilterConfigurationType)
             {
-                case FilterConfigurationType.LowPass: await InitializeLowPass(); break;
-                case FilterConfigurationType.HighPass: await InitializeHighPass(); break;
-                case FilterConfigurationType.BandPass: await InitializeBandPass(); break;
-                case FilterConfigurationType.BandStop: await InitializeBandStop(); break;
-                default: throw new NotImplementedException();
+                case FilterConfigurationType.LowPass: InitializeLowPass(); break;
+                case FilterConfigurationType.HighPass: InitializeHighPass(); break;
+                case FilterConfigurationType.BandPass: InitializeBandPass(); break;
+                case FilterConfigurationType.BandStop: InitializeBandStop(); break;
             };
+
+            InitializeFilterSampleData();
         }
-        protected virtual void InitializeParameters()
+        private void InitializeParameters()
         {
             FilterParameters[FilterParameterName.Cutoff] = new FilterParameter(FilterParameterName.Order, 1, 1, 5, string.Empty);
             switch (FilterConfigurationType)
@@ -83,11 +93,29 @@ namespace SignalDataPicker.model.Filters
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            m_SampleFrequencyAxis = new double[Convert.ToInt32(SamplingFrequency / m_SampleFrequencyDelta / 2)];
+
+            Parallel.For(0, m_SampleFrequencyAxis.Length, i => m_SampleFrequencyAxis[i] = i * m_SampleFrequencyDelta);
+        }
+        private void InitializeFilterSampleData()
+        {
+            // TODO: Apply filter to sample data
+            m_FilterSampleData = new double[m_SampleFrequencyAxis.Length, 2];
+            Parallel.For(0, m_SampleFrequencyAxis.Length, i => {
+                m_FilterSampleData[i, 0] = m_SampleFrequencyAxis[i];
+                m_FilterSampleData[i, 1] = 1;
+            });
         }
         public virtual async Task<double[,]> ApplyFilter()
         {
             throw new NotImplementedException();
         }
+        #endregion
+
+        #region Fields
+        private double[,] m_FilterSampleData = new double[0, 0];
+        private double[] m_SampleFrequencyAxis = Array.Empty<double>();
+        private const double m_SampleFrequencyDelta = 0.1;
         #endregion
     }
 }

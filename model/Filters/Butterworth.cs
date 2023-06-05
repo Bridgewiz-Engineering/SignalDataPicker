@@ -30,16 +30,7 @@ namespace SignalDataPicker.model.Filters
 
         protected override async Task InitializeLowPass()
         {
-            await Task.Run(() =>
-            {
-                var nyquist = SamplingFrequency / 2d;
-                var normalizedCutoff = FilterParameters[FilterParameterName.Cutoff].Value / nyquist;
-
-                Coefficients = IirCoefficients.LowPass(normalizedCutoff + TransitionBandwidth, normalizedCutoff - TransitionBandwidth, DefaultPassbandRipple, DefaultStopbandAttenuation);
-
-            });
-
-
+            throw new NotImplementedException();
         }
     }
 }

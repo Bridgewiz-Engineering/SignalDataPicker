@@ -11,7 +11,7 @@
                  d:DataContext="{d:DesignInstance Type=viewmodel:ProcessingViewModel}"
         mc:Ignorable="d"
         WindowStartupLocation="CenterScreen"
-        Title="SİNYAL ANALİZİ" Height="720" Width="1200">
+        Title="SİNYAL ANALİZİ" Height="720" Width="1280">
     <mah:MetroWindow.Resources>
         <converter:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
         <converter:FilterTypeToVisibilityConverter x:Key="FilterTypeToVisibilityConverter" />
@@ -23,6 +23,7 @@
     </behaviors:Interaction.Triggers>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -30,7 +31,10 @@
             <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <lvc:CartesianChart Grid.Row="0" Grid.Column="0" Margin="4" Title="{Binding FFTTitle}" Series="{Binding FFTSeries}" ZoomMode="Both" XAxes="{Binding FFTAxesX}" YAxes="{Binding FFTAxesY}"/>
-        <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+
+        <lvc:CartesianChart Grid.Row="1" Grid.Column="0" Margin="4" Title="{Binding FilterTitle}" Series="{Binding FilterSeries}" ZoomMode="None" XAxes="{Binding FilterAxesX}" YAxes="{Binding FilterAxesY}"/>
+
+        <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" Margin="0,0,8,0">
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
             <TextBlock Text="Maksimum Frekans (Hz)" Margin="4" HorizontalAlignment="Center" />
             <TextBlock Text="{Binding FFTMaxFrequency, StringFormat='F2'}" Margin="4" HorizontalAlignment="Center" />
@@ -42,28 +46,18 @@
             <ComboBox ItemsSource="{Binding FilterTypes}" SelectedItem="{Binding SelectedFilterType}" Margin="4" />
             <TextBlock Text="Filtre Özelliği" Margin="4" HorizontalAlignment="Center" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" />
             <ComboBox ItemsSource="{Binding FilterConfigurationTypes}" Visibility="{Binding SelectedFilterType, Converter={StaticResource FilterTypeToVisibilityConverter}}" SelectedItem="{Binding SelectedFilterConfigurationType}" Margin="4" />
-            <StackPanel Orientation="Vertical" Visibility="{Binding Filter, Converter={StaticResource NullToVisibilityConverter}}">
-                <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
-                <ItemsControl ItemsSource="{Binding Filter.FilterParameters}" Margin="4" HorizontalAlignment="Center">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Vertical">
-                                <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name}" />
-                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-
-
-
-                <UniformGrid Columns="2">
-                    <Button Content ="See Filter" Margin="4" Command="{Binding ShowFilterPreviewWindowCommand}" />
-                    <Button Content="Apply Filter" Margin="4" Command="{Binding ApplyFilterCommand}" />
-                </UniformGrid>
-            </StackPanel>
-            
-            
+            <Button Content="Apply Filter" Margin="4" Command="{Binding ApplyFilterCommand}" />
+            <TextBlock Text="Filtre Parametreleri" Margin="4" HorizontalAlignment="Center" />
+            <ItemsControl ItemsSource="{Binding Filter.FilterParameters.Values}" Margin="4" HorizontalAlignment="Center">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Vertical">
+                            <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name, Mode=OneTime}" />
+                            <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
             <mah:ProgressRing IsActive="{Binding IsProcessing}" Width="100" Height="100" Margin="4" Foreground="Red" />
         </StackPanel>
     </Grid>

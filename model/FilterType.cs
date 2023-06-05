@@ -2,7 +2,7 @@
 {
     enum FilterType
     {
-        None,
+        NoFilter,
         Butterworth,
         Chebyshev,
         Bessel,
