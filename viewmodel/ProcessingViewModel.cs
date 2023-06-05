@@ -47,13 +47,13 @@ namespace SignalDataPicker.viewmodel
         public int FFTDCCutoff { get => m_FFTDCCutoff; set { SetProperty(ref m_FFTDCCutoff, value); CutFFT(); } }
 
         // Filter Properties
-        public FilterType SelectedFilterType { get => m_SelectedFilterType; set { SetProperty(ref m_SelectedFilterType, value); UpdateCommandStates(); } }
+        public FilterType SelectedFilterType { get => m_SelectedFilterType; set => SetProperty(ref m_SelectedFilterType, value); }
         public FilterBase? Filter { get => m_Filter; private set { SetProperty(ref m_Filter, value); UpdateCommandStates(); UpdateFilterChart(); } }
         public LabelVisual FilterTitle { get => m_FilterTitle; }
         public ISeries[] FilterSeries { get => m_FilterSeries; private set => SetProperty(ref m_FilterSeries, value); }
         public ICartesianAxis[] FilterAxesX { get => m_FilterAxesX; set => SetProperty(ref m_FilterAxesX, value); }
         public ICartesianAxis[] FilterAxesY { get => m_FilterAxesY; set => SetProperty(ref m_FilterAxesY, value); }
-        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set { SetProperty(ref m_SelectedFilterConfigurationType, value); UpdateCommandStates(); } }
+        public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set => SetProperty(ref m_SelectedFilterConfigurationType, value); }
 
 
         #endregion
@@ -161,7 +161,7 @@ namespace SignalDataPicker.viewmodel
                 m_WindowService.ShowErrorDialog(data.ErrorMessage);
             }
 
-            InitializeFilter();
+            await InitializeFilter();
 
             IsProcessing = false;
         }
