@@ -28,7 +28,7 @@ namespace SignalDataPicker.model.Filters
             throw new NotImplementedException();
         }
 
-        protected override async Task InitializeLowPass()
+        protected override Task InitializeLowPass()
         {
             throw new NotImplementedException();
         }

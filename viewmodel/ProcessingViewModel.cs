@@ -33,6 +33,7 @@ namespace SignalDataPicker.viewmodel
         // Commands
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
         public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; }
+        public IAsyncRelayCommand UpdateFilterCommand { get => m_UpdateFilterCommand; }
 
         // Command Processing
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
@@ -87,6 +88,7 @@ namespace SignalDataPicker.viewmodel
 
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
             m_ApplyFilterCommand = new AsyncRelayCommand(ApplyFilter, ApplyFilterCanExecute);
+            m_UpdateFilterCommand = new AsyncRelayCommand(InitializeFilter, InitializeFilterCanExecute);
 
             m_Commands = Array.Empty<IAsyncRelayCommand>();
             m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand };
@@ -184,6 +186,10 @@ namespace SignalDataPicker.viewmodel
             foreach (var command in m_AsyncCommands)
                 command.NotifyCanExecuteChanged();
         }
+        private bool InitializeFilterCanExecute()
+        {
+            return !IsProcessing;
+        }
         #endregion
 
         #region Private methods
@@ -213,7 +219,6 @@ namespace SignalDataPicker.viewmodel
         {
             IsProcessing = true;
             Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
-            Debug.WriteLine($"Filter: {Filter}");
             UpdateFilterChart();
             IsProcessing = false;
         }
@@ -231,6 +236,7 @@ namespace SignalDataPicker.viewmodel
         private readonly IWindowService m_WindowService;
         private readonly IAsyncRelayCommand m_ProcessCommand;
         private readonly IAsyncRelayCommand m_ApplyFilterCommand;
+        private readonly IAsyncRelayCommand m_UpdateFilterCommand;
         private readonly IRelayCommand[] m_Commands;
         private readonly IAsyncRelayCommand[] m_AsyncCommands;
         private int m_FFTDCCutoff = 1;
