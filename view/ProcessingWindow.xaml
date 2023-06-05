@@ -69,7 +69,13 @@
                         <DataTemplate>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name, Mode=OneTime}" />
-                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False" />
+                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False">
+                                    <behaviors:Interaction.Triggers>
+                                        <behaviors:EventTrigger EventName="ValueChanged">
+                                            <behaviors:InvokeCommandAction Command="{Binding DataContext.UpdateFilterCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}" />
+                                        </behaviors:EventTrigger>
+                                    </behaviors:Interaction.Triggers>
+                                </mah:NumericUpDown>
                             </StackPanel>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>

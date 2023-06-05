@@ -220,6 +220,7 @@ namespace SignalDataPicker.viewmodel
             IsProcessing = true;
             Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
             UpdateFilterChart();
+            Debug.WriteLine($"Filter: {Filter}");
             IsProcessing = false;
         }
         #endregion
