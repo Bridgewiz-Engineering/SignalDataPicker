@@ -29,7 +29,7 @@ namespace SignalDataPicker.model.Filters
         protected abstract Task InitializeBandStop();
         #endregion
 
-        #region Constructors
+        #region Constructor
         protected FilterBase(FilterConfigurationType filterConfigurationType, int samplingFrequency)
         {
             FilterConfigurationType = filterConfigurationType;
@@ -46,7 +46,7 @@ namespace SignalDataPicker.model.Filters
         public int SamplingFrequency { get; private set; }
         protected double[] FilterCoefficients { get; set; } = Array.Empty<double>();
 
-
+        // Filter default values
         protected const int DefaultOrder = 1;
         protected const double DefaultCutoff = 1d;
         protected const double DefaultCutoff1 = 1d;

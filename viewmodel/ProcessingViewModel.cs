@@ -13,7 +13,6 @@ using SignalDataPicker.service;
 using SkiaSharp;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,9 +58,6 @@ namespace SignalDataPicker.viewmodel
 
         #endregion
 
-
-
-
         #region Public methods
         public void SetFileData(FileData fileData)
         {
@@ -103,7 +99,7 @@ namespace SignalDataPicker.viewmodel
         #region Command Handlers
         private Task ApplyFilter()
         {
-            Debug.WriteLine($"Filter: {Filter}");
+            m_WindowService.ShowErrorDialog("Bu özellik henüz eklenmemiştir.");
             return Task.CompletedTask;
         }
 
@@ -217,11 +213,20 @@ namespace SignalDataPicker.viewmodel
         }
         private async Task InitializeFilter()
         {
-            IsProcessing = true;
-            Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
-            UpdateFilterChart();
-            Debug.WriteLine($"Filter: {Filter}");
-            IsProcessing = false;
+            try
+            {
+                IsProcessing = true;
+                Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
+                UpdateFilterChart();
+            }
+            catch (NotImplementedException)
+            {
+                m_WindowService.ShowErrorDialog("Bu filtre henüz eklenmemiştir.");
+            }
+            finally
+            {
+                IsProcessing = false;
+            }
         }
         #endregion
 
