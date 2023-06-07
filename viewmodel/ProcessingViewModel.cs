@@ -105,13 +105,12 @@ namespace SignalDataPicker.viewmodel
 
         private void UpdateFilterChart()
         {
-            if (Filter?.FilterSampleData?.Length > 0)
+            if (Filter?.Gain?.Length > 0)
             {
                 var chartPoints = new List<ObservablePoint>();
-                var chartData = Filter!.FilterSampleData!;
-                for (int i = 0; i < Filter!.FilterSampleData!.Length / Filter!.FilterSampleData!.Rank; i++)
-                    chartPoints.Add(new ObservablePoint(chartData[i, 0], chartData[i, 1]));
-
+                var chartData = Filter!.Gain!;
+                Parallel.For(0, chartData.Length / chartData.Rank, i => chartPoints.Add(new ObservablePoint(chartData[i,0], chartData[i,1])));
+                
                 FilterSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
@@ -122,12 +121,11 @@ namespace SignalDataPicker.viewmodel
                         GeometryStroke = null,
                         LineSmoothness = 0,
                         Values = chartPoints,
-                        TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X}"
+                        TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X} - {chartPoint.Model?.Y}"
                     }
                 };
                 ResetFilterAxies();
             }
-
         }
 
         private async Task Process()
@@ -216,7 +214,7 @@ namespace SignalDataPicker.viewmodel
             try
             {
                 IsProcessing = true;
-                Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128);
+                Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128, m_FFTPoints?.Count ?? 1);
                 UpdateFilterChart();
             }
             catch (NotImplementedException)

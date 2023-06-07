@@ -8,20 +8,20 @@ namespace SignalDataPicker.factory
 {
     internal class FilterFactory
     {
-        public async Task<FilterBase> CreateFilterAsync(FilterType filterType, FilterConfigurationType filterConfigurationType, int samplingFrequency)
+        public async Task<FilterBase> CreateFilterAsync(FilterType filterType, FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength)
         {
-            var f = await Task.Run(() => m_FilterCreators[filterType](filterConfigurationType, samplingFrequency));
-            return f;
+            return await Task.Run(() => m_FilterCreators[filterType](filterConfigurationType, samplingFrequency, filterLength));
+            
         }
-        private readonly Dictionary<FilterType, Func<FilterConfigurationType, int, FilterBase>> m_FilterCreators = new()
+        private readonly Dictionary<FilterType, Func<FilterConfigurationType, int, int, FilterBase>> m_FilterCreators = new()
         {
-            { FilterType.NoFilter,  (filterConfigurationType, samplingFrequency) => new NoFilter(filterConfigurationType, samplingFrequency) },
-            { FilterType.Elliptic, (filterConfigurationType, samplingFrequency) => new Elliptic(filterConfigurationType, samplingFrequency) },
-            { FilterType.Legendre, (filterConfigurationType, samplingFrequency) => new Legendre(filterConfigurationType, samplingFrequency) },
-            { FilterType.Gaussian, (filterConfigurationType, samplingFrequency) => new Gaussian(filterConfigurationType, samplingFrequency) },
-            { FilterType.Butterworth, (filterConfigurationType, samplingFrequency) => new Butterworth(filterConfigurationType, samplingFrequency) },
-            { FilterType.Chebyshev, (filterConfigurationType, samplingFrequency) => new Chebyshev(filterConfigurationType, samplingFrequency) },
-            { FilterType.Bessel, (filterConfigurationType, samplingFrequency) => new Bessel(filterConfigurationType, samplingFrequency) }
+            { FilterType.NoFilter, (filterConfigurationType, samplingFrequency, filterLength) => new NoFilter(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Butterworth, (filterConfigurationType, samplingFrequency, filterLength) => new Butterworth(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Legendre, (filterConfigurationType, samplingFrequency, filterLength) => new Legendre(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Elliptic, (filterConfigurationType, samplingFrequency, filterLength) => new Elliptic(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Chebyshev, (filterConfigurationType, samplingFrequency, filterLength) => new Chebyshev(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Gaussian, (filterConfigurationType, samplingFrequency, filterLength) => new Gaussian(filterConfigurationType, samplingFrequency, filterLength) },
+            { FilterType.Bessel, (filterConfigurationType, samplingFrequency, filterLength) => new Bessel(filterConfigurationType, samplingFrequency, filterLength) }
         };
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace SignalDataPicker.model.Filters
+﻿namespace SignalDataPicker.model.Filters
 {
     /// <summary>
     /// No filter. 
@@ -9,45 +6,10 @@ namespace SignalDataPicker.model.Filters
     /// </summary>
     internal class NoFilter : FilterBase
     {
-        public NoFilter(FilterConfigurationType filterConfigurationType, int samplingFrequency) : base(filterConfigurationType, samplingFrequency)
+        public NoFilter(FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength) : base(filterConfigurationType, samplingFrequency, filterLength) => FilterType = FilterType.NoFilter;
+        public override double CalculateGain(double frequency)
         {
-            FilterType = FilterType.NoFilter;
-        }
-
-        protected override async Task InitializeBandPass()
-        {
-            await Task.Run(() =>
-            {
-                FilterCoefficients = new double[SamplingFrequency];
-                Array.Fill(FilterCoefficients, 1.0);
-            });
-        }
-
-        protected override async Task InitializeBandStop()
-        {
-            await Task.Run(() =>
-            {
-                FilterCoefficients = new double[SamplingFrequency];
-                Array.Fill(FilterCoefficients, 1.0);
-            });
-        }
-
-        protected override async Task InitializeHighPass()
-        {
-            await Task.Run(() =>
-            {
-                FilterCoefficients = new double[SamplingFrequency];
-                Array.Fill(FilterCoefficients, 1.0);
-            });
-        }
-
-        protected override async Task InitializeLowPass()
-        {
-            await Task.Run(() =>
-            {
-                FilterCoefficients = new double[SamplingFrequency];
-                Array.Fill(FilterCoefficients, 1.0);
-            });
+            return 1d;
         }
     }
 }

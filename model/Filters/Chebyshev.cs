@@ -5,27 +5,12 @@ namespace SignalDataPicker.model.Filters
 {
     internal class Chebyshev : FilterBase
     {
-        public Chebyshev(FilterConfigurationType filterConfigurationType, int samplingFrequency) : base(filterConfigurationType, samplingFrequency)
-        { 
+        public Chebyshev(FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength) : base(filterConfigurationType, samplingFrequency, filterLength)
+        {
             FilterType = FilterType.Chebyshev;
         }
 
-        protected override Task<double[,]> InitializeBandPass()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeBandStop()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeHighPass()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeLowPass()
+        public override double CalculateGain(double frequency)
         {
             throw new NotImplementedException();
         }

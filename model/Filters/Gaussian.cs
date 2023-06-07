@@ -8,27 +8,11 @@ namespace SignalDataPicker.model.Filters
 {
     internal class Gaussian : FilterBase
     {
-        public Gaussian(FilterConfigurationType filterConfigurationType, int samplingFrequency) : base(filterConfigurationType, samplingFrequency)
-        { 
+        public Gaussian(FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength) : base(filterConfigurationType, samplingFrequency, filterLength)
+        {
             FilterType = FilterType.Gaussian;
         }
-
-        protected override Task<double[,]> InitializeBandPass()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeBandStop()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeHighPass()
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override Task<double[,]> InitializeLowPass()
+        public override double CalculateGain(double frequency)
         {
             throw new NotImplementedException();
         }

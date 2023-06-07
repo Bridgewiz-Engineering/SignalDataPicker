@@ -11,29 +11,17 @@ namespace SignalDataPicker.model.Filters
     internal abstract class FilterBase
     {
         #region Abstract Methods
-        /// <summary>
-        /// Initialize the filter coefficients and the sample data for the low pass filter
-        /// </summary>
-        protected abstract Task InitializeLowPass();
-        /// <summary>
-        /// Initialize the filter coefficients and the sample data for the high pass filter
-        /// </summary>
-        protected abstract Task InitializeHighPass();
-        /// <summary>
-        /// Initialize the filter coefficients and the sample data for the band pass filter
-        /// </summary>
-        protected abstract Task InitializeBandPass();
-        /// <summary>
-        /// Initialize the filter coefficients and the sample data for the band stop filter
-        /// </summary>       
-        protected abstract Task InitializeBandStop();
+        public abstract double CalculateGain(double frequency);
         #endregion
 
         #region Constructor
-        protected FilterBase(FilterConfigurationType filterConfigurationType, int samplingFrequency)
+        protected FilterBase(FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength)
         {
             FilterConfigurationType = filterConfigurationType;
             SamplingFrequency = samplingFrequency;
+            FilterLength = filterLength;
+            Gain = new double[FilterLength / 2, 2] ;
+            InitializeParameters();
             Initialize();
         }
         #endregion
@@ -42,47 +30,38 @@ namespace SignalDataPicker.model.Filters
         public FilterType FilterType { get; protected set; }
         public FilterConfigurationType FilterConfigurationType { get; private set; }
         public Dictionary<FilterParameterName, FilterParameter> FilterParameters { get; } = new();
-        public double[,] FilterSampleData { get => m_FilterSampleData; private set => m_FilterSampleData = value; }
-        public int SamplingFrequency { get; private set; }
-        protected double[] FilterCoefficients { get; set; } = Array.Empty<double>();
+        protected int FilterLength { get; private set; }
+        protected int SamplingFrequency { get; private set; }
+        public double[,] Gain { get; private set; }
 
-        // Filter default values
-        protected const int DefaultOrder = 1;
-        protected const double DefaultCutoff = 1d;
-        protected const double DefaultCutoff1 = 1d;
-        protected const double DefaultCutoff2 = 10d;
-        protected const double DefaultPassbandRipple = 0.1d;
-        protected const double DefaultStopbandAttenuation = 60d;
-        protected const double TransitionBandwidth = 1d;
 
         #endregion
 
         #region Virtual Methods
-        /// <summary>
-        /// This method should be called after the filter has been initialized.
-        /// </summary>
         private void Initialize()
         {
-            InitializeParameters();
 
-            switch (FilterConfigurationType)
+            var delta = SamplingFrequency / (double)FilterLength;
+            for (int i = 0; i < FilterLength / 2; i++)
             {
-                case FilterConfigurationType.LowPass: InitializeLowPass(); break;
-                case FilterConfigurationType.HighPass: InitializeHighPass(); break;
-                case FilterConfigurationType.BandPass: InitializeBandPass(); break;
-                case FilterConfigurationType.BandStop: InitializeBandStop(); break;
-            };
-
-            InitializeFilterSampleData();
+                var frequency = i * delta;
+                Gain[i, 0] = frequency;
+                var g = CalculateGain(frequency);
+                Gain[i, 1] = g;
+            }
         }
-        private void InitializeParameters()
+        /// <summary>
+        /// Add the default parameters
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException"></exception>
+        protected virtual void InitializeParameters()
         {
-            FilterParameters[FilterParameterName.Cutoff] = new FilterParameter(FilterParameterName.Order, 1, 1, 5, string.Empty);
+            FilterParameters[FilterParameterName.Order] = new FilterParameter(FilterParameterName.Order, 1, 1, 5, string.Empty);
             switch (FilterConfigurationType)
             {
                 case FilterConfigurationType.LowPass:
                 case FilterConfigurationType.HighPass:
-                    FilterParameters[FilterParameterName.Cutoff] = new FilterParameter(FilterParameterName.Cutoff, 1d, 0, 100, "Hz");
+                    FilterParameters[FilterParameterName.Cutoff] = new FilterParameter(FilterParameterName.Cutoff, 4d, 0, 100, "Hz");
                     break;
                 case FilterConfigurationType.BandPass:
                 case FilterConfigurationType.BandStop:
@@ -91,30 +70,42 @@ namespace SignalDataPicker.model.Filters
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
-            }
-            m_SampleFrequencyAxis = new double[Convert.ToInt32(SamplingFrequency / m_SampleFrequencyDelta / 2)];
 
-            Parallel.For(0, m_SampleFrequencyAxis.Length, i => m_SampleFrequencyAxis[i] = i * m_SampleFrequencyDelta);
+            }
         }
-        private void InitializeFilterSampleData()
+
+        public async Task<double[,]> ApplyFilter(double[,] data)
         {
-            // TODO: Apply filter to sample data
-            m_FilterSampleData = new double[m_SampleFrequencyAxis.Length, 2];
-            Parallel.For(0, m_SampleFrequencyAxis.Length, i => {
-                m_FilterSampleData[i, 0] = m_SampleFrequencyAxis[i];
-                m_FilterSampleData[i, 1] = 1;
+            var dataLength = data.Length / data.Rank;
+            var result = new double[dataLength, 2];
+
+            await Task.Run(() =>
+            {
+                for (var i = 0; i < dataLength; i++)
+                {
+                    result[i, 0] = data[i, 0];
+                    result[i, 1] = data[i, 1] * CalculateGain(data[i, 0]);
+                }
             });
+            return result;
         }
-        public virtual async Task<double[,]> ApplyFilter()
+
+        public void SetParameter(FilterParameterName parameterName, double value)
         {
-            throw new NotImplementedException();
+            FilterParameters[parameterName].Value = value;
+            Initialize();
         }
         #endregion
 
         #region Fields
-        private double[,] m_FilterSampleData = new double[0, 0];
-        private double[] m_SampleFrequencyAxis = Array.Empty<double>();
-        private const double m_SampleFrequencyDelta = 0.1;
+        // Filter default values
+        protected const int DefaultOrder = 1;
+        protected const double DefaultCutoff = 1d;
+        protected const double DefaultCutoff1 = 1d;
+        protected const double DefaultCutoff2 = 10d;
+        protected const double DefaultPassbandRipple = 0.1d;
+        protected const double DefaultStopbandAttenuation = 60d;
+        protected const double TransitionBandwidth = 1d;
         #endregion
     }
 }
