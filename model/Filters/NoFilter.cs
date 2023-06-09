@@ -6,10 +6,14 @@
     /// </summary>
     internal class NoFilter : FilterBase
     {
-        public NoFilter(FilterConfigurationType filterConfigurationType, int samplingFrequency, int filterLength) : base(filterConfigurationType, samplingFrequency, filterLength) => FilterType = FilterType.NoFilter;
-        public override double CalculateGain(double frequency)
-        {
-            return 1d;
-        }
+        public NoFilter(FilterConfigurationType filterConfigurationType, double[] frequencyAxis) : base(filterConfigurationType, frequencyAxis) => FilterType = FilterType.NoFilter;
+
+        protected override double CalculateBandPassGain(double frequency) => 1d;
+
+        protected override double CalculateBandStopGain(double frequency) => 1d;
+
+        protected override double CalculateHighPassGain(double frequency) => 1d;
+
+        protected override double CalculateLowPassGain(double frequency) => 1d;
     }
 }

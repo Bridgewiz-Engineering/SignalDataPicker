@@ -33,7 +33,7 @@
         </Grid.ColumnDefinitions>
         <lvc:CartesianChart Grid.Row="0" Grid.Column="0" Margin="4" Title="{Binding FFTTitle}" Series="{Binding FFTSeries}" ZoomMode="Both" XAxes="{Binding FFTAxesX}" YAxes="{Binding FFTAxesY}"/>
 
-        <lvc:CartesianChart Grid.Row="1" Grid.Column="0" Margin="4" Title="{Binding FilterTitle}" Series="{Binding FilterSeries}" ZoomMode="None" XAxes="{Binding FilterAxesX}" YAxes="{Binding FilterAxesY}"/>
+        <lvc:CartesianChart Grid.Row="1" Grid.Column="0" Margin="4" Title="{Binding FilterTitle}" Series="{Binding FilterSeries}" ZoomMode="None" XAxes="{Binding FilterAxesX}" YAxes="{Binding FilterAxesY}" AnimationsSpeed="0"/>
 
         <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical" Margin="0,0,8,0">
             <TextBlock Text="Analiz Sonuçları" Margin="8" HorizontalAlignment="Center" FontWeight="Bold" FontSize="16" />
@@ -69,10 +69,10 @@
                         <DataTemplate>
                             <StackPanel Orientation="Vertical">
                                 <TextBlock HorizontalAlignment="Center" Margin="4" Text="{Binding Name, Mode=OneTime}" />
-                                <mah:NumericUpDown x:Name="sliderParam" Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False">
+                                <mah:NumericUpDown Value="{Binding Path=Value, Mode=TwoWay}" Minimum="{Binding Minimum, Mode=OneTime}" Maximum="{Binding Maximum, Mode=OneTime}" Margin="4" ButtonsAlignment="Opposite" TextAlignment="Center" NumericInputMode="Numbers" Width="100" InterceptManualEnter="False">
                                     <behaviors:Interaction.Triggers>
                                         <behaviors:EventTrigger EventName="ValueChanged">
-                                            <behaviors:InvokeCommandAction Command="{Binding DataContext.UpdateFilterCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}" />
+                                            <behaviors:InvokeCommandAction Command="{Binding DataContext.RecalculateFilterCommand, RelativeSource={RelativeSource AncestorType={x:Type mah:MetroWindow}}}" />
                                         </behaviors:EventTrigger>
                                     </behaviors:Interaction.Triggers>
                                 </mah:NumericUpDown>

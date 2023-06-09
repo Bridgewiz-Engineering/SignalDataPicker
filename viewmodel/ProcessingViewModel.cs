@@ -14,7 +14,6 @@ using SkiaSharp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace SignalDataPicker.viewmodel
@@ -33,10 +32,10 @@ namespace SignalDataPicker.viewmodel
         public IAsyncRelayCommand ProcessCommand { get => m_ProcessCommand; }
         public IAsyncRelayCommand ApplyFilterCommand { get => m_ApplyFilterCommand; }
         public IAsyncRelayCommand UpdateFilterCommand { get => m_UpdateFilterCommand; }
-
+        public IAsyncRelayCommand RecalculateFilterCommand { get => m_RecalculateFilterCommand; }
         // Command Processing
         public FileData? FileData { get => m_FileData; private set => SetProperty(ref m_FileData, value); }
-        public bool IsProcessing { get => m_IsProcessing; private set => SetProperty(ref m_IsProcessing, value); }
+        public bool IsProcessing { get => m_IsProcessing; private set { SetProperty(ref m_IsProcessing, value); UpdateCommandStates(); } }
 
         // FFT Properties
         public double FFTMaxFrequency { get => m_FFTMaxFrequency; private set => SetProperty(ref m_FFTMaxFrequency, value); }
@@ -54,8 +53,6 @@ namespace SignalDataPicker.viewmodel
         public ICartesianAxis[] FilterAxesX { get => m_FilterAxesX; set => SetProperty(ref m_FilterAxesX, value); }
         public ICartesianAxis[] FilterAxesY { get => m_FilterAxesY; set => SetProperty(ref m_FilterAxesY, value); }
         public FilterConfigurationType SelectedFilterConfigurationType { get => m_SelectedFilterConfigurationType; set => SetProperty(ref m_SelectedFilterConfigurationType, value); }
-
-
         #endregion
 
         #region Public methods
@@ -85,9 +82,10 @@ namespace SignalDataPicker.viewmodel
             m_ProcessCommand = new AsyncRelayCommand(Process, ProcessCanExecute);
             m_ApplyFilterCommand = new AsyncRelayCommand(ApplyFilter, ApplyFilterCanExecute);
             m_UpdateFilterCommand = new AsyncRelayCommand(InitializeFilter, InitializeFilterCanExecute);
+            m_RecalculateFilterCommand = new AsyncRelayCommand(RecalculateFilter, RecalculateFilterCanExecute);
 
             m_Commands = Array.Empty<IAsyncRelayCommand>();
-            m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand };
+            m_AsyncCommands = new[] { m_ProcessCommand, m_ApplyFilterCommand, m_RecalculateFilterCommand, m_UpdateFilterCommand, m_RecalculateFilterCommand };
 
             m_FFTSeries = Array.Empty<ISeries>();
 
@@ -97,20 +95,72 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command Handlers
-        private Task ApplyFilter()
+
+        private async Task RecalculateFilter()
         {
-            m_WindowService.ShowErrorDialog("Bu özellik henüz eklenmemiştir.");
-            return Task.CompletedTask;
+            if (Filter != null)
+            {
+                IsProcessing = true;
+                await Task.Run(() => Filter.OnPropertyChanged());
+                IsProcessing = false;
+                UpdateFilterChart();
+            }
+        }
+        private async Task ApplyFilter()
+        {
+            try
+            {
+                double[] amplitudes = m_FFTPoints?.Select(q => q.Y ?? 1d).ToArray() ?? Array.Empty<double>();
+                IsProcessing = true;
+                double[]? filteredData = await Filter!.ApplyFilter(amplitudes);
+
+                if (filteredData == null || filteredData.Length == 0)
+                    m_WindowService.ShowErrorDialog("Hata!");
+                else
+                {
+                    m_FilteredPoints = new List<ObservablePoint>(filteredData.Length);
+                    await Task.Run(() =>
+                    {
+                        for (int i = 0; i < filteredData.Length; i++)
+                            m_FilteredPoints.Add(new ObservablePoint(m_FFTPoints![i].X, filteredData[i]));
+                    });
+                    FFTSeries = new ISeries[]
+                    {
+                        new LineSeries<ObservablePoint>
+                        {
+                            Fill = null,
+                            Stroke = new SolidColorPaint(SKColors.Red) { StrokeThickness = 1},
+                            GeometryFill = null,
+                            GeometryStroke = null,
+                            LineSmoothness = 0,
+                            Values = m_FilteredPoints,
+                            TooltipLabelFormatter = (chartPoint) => $"{chartPoint.Model?.X} - {chartPoint.Model?.Y}"
+                        }
+                    };
+                    m_IsFilterApplied = true;
+                    ResetFFTAxes();
+                    CutFFT();
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                m_WindowService.ShowErrorDialog(ex.Message);
+            }
+            IsProcessing = false;
         }
 
         private void UpdateFilterChart()
         {
             if (Filter?.Gain?.Length > 0)
             {
+
                 var chartPoints = new List<ObservablePoint>();
                 var chartData = Filter!.Gain!;
-                Parallel.For(0, chartData.Length / chartData.Rank, i => chartPoints.Add(new ObservablePoint(chartData[i,0], chartData[i,1])));
-                
+                for (int i = 0; i < chartData.GetLength(0); i++)
+                {
+                    chartPoints.Add(new ObservablePoint(chartData[i, 0], chartData[i, 1]));
+                }
+
                 FilterSeries = new ISeries[]
                 {
                     new LineSeries<ObservablePoint>
@@ -130,6 +180,7 @@ namespace SignalDataPicker.viewmodel
 
         private async Task Process()
         {
+            m_IsFilterApplied = false;
             IsProcessing = true;
             var data = await m_AnalysisService.Process(FileData!, new());
             if (data.IsSuccess)
@@ -165,13 +216,17 @@ namespace SignalDataPicker.viewmodel
         #endregion
 
         #region Command States
+        private bool RecalculateFilterCanExecute()
+        {
+            return !IsProcessing && Filter != null;
+        }
         private bool ProcessCanExecute()
         {
             return !IsProcessing;
         }
         private bool ApplyFilterCanExecute()
         {
-            return !IsProcessing && m_SelectedFilterType != FilterType.NoFilter;
+            return !IsProcessing && Filter != null;
         }
         private void UpdateCommandStates()
         {
@@ -190,8 +245,14 @@ namespace SignalDataPicker.viewmodel
 
         private void CutFFT()
         {
-            var cutData = m_FFTPoints?.Where(p => p.X > FFTDCCutoff).ToList();
+            List<ObservablePoint>? cutData;
+            if (m_IsFilterApplied)
+                cutData = m_FilteredPoints?.Where(p => p.X > FFTDCCutoff).ToList();
+            else
+                cutData = m_FFTPoints?.Where(p => p.X > FFTDCCutoff).ToList();
+
             var maxAmp = cutData?.Max(p => p.Y);
+
             FFTMaxFrequency = cutData?.Find(q => q.Y == maxAmp)?.X ?? -1;
             FFTSeries[0].Values = cutData;
         }
@@ -213,8 +274,9 @@ namespace SignalDataPicker.viewmodel
         {
             try
             {
+                var freqAxis = m_FFTPoints?.Select(q => q.X ?? 1d).ToArray();
                 IsProcessing = true;
-                Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, m_FileData?.SamplingFrequency ?? 128, m_FFTPoints?.Count ?? 1);
+                Filter = await m_FilterFactory.CreateFilterAsync(m_SelectedFilterType, m_SelectedFilterConfigurationType, freqAxis ?? Array.Empty<double>());
                 UpdateFilterChart();
             }
             catch (NotImplementedException)
@@ -241,24 +303,25 @@ namespace SignalDataPicker.viewmodel
         private readonly IAsyncRelayCommand m_ProcessCommand;
         private readonly IAsyncRelayCommand m_ApplyFilterCommand;
         private readonly IAsyncRelayCommand m_UpdateFilterCommand;
+        private readonly IAsyncRelayCommand m_RecalculateFilterCommand;
         private readonly IRelayCommand[] m_Commands;
         private readonly IAsyncRelayCommand[] m_AsyncCommands;
         private int m_FFTDCCutoff = 1;
         private double m_FFTMaxFrequency;
         private List<ObservablePoint>? m_FFTPoints;
 
-
         private FilterBase? m_Filter;
         private FilterType m_SelectedFilterType = FilterType.NoFilter;
         private FilterConfigurationType m_SelectedFilterConfigurationType = FilterConfigurationType.LowPass;
-        private LabelVisual m_FilterTitle = new() { Text = "Filter (NoFilter)", TextSize = 15, Padding = new LiveChartsCore.Drawing.Padding(10), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
+        private LabelVisual m_FilterTitle = new() { Text = "Filter", TextSize = 12, Padding = new LiveChartsCore.Drawing.Padding(10), Paint = new SolidColorPaint(SKColors.DarkSlateGray) };
         private ISeries[] m_FilterSeries = Array.Empty<ISeries>();
-        private ICartesianAxis[] m_FilterAxesX = new Axis[] { new() { Name = "Hz" } };
+        private ICartesianAxis[] m_FilterAxesX = new Axis[] { new() };
         private ICartesianAxis[] m_FilterAxesY = new Axis[] { new() };
+        private List<ObservablePoint>? m_FilteredPoints;
+        private bool m_IsFilterApplied;
 
         private readonly FilterFactory m_FilterFactory = new();
 
-        private readonly SemaphoreSlim m_FilterSemaphore = new(1, 1);
 
 
         #endregion
